@@ -1,10 +1,11 @@
 import matplotlib
 matplotlib.use("Agg")
 
+import matplotlib.pyplot as plt
 
 import numpy as np
 import joblib
-
+import gc
 
 import pandas as pd
 import base64
@@ -32,7 +33,7 @@ DATA_PATH = os.path.join(
 # ===============================
 
 MODELS = None
-
+EXPLAINERS = {}
 
 def load_models():
 
@@ -121,8 +122,7 @@ def plot_to_base64():
 
     buffer.close()
 
-    plt.close("all")   # <-- change
-    plt.clf()
+    plt.close()
 
     return img_base64
 
@@ -166,6 +166,18 @@ def get_model(recommended):
     models = load_models()
 
     return models[recommended]
+def get_explainer(recommended):
+
+    global EXPLAINERS
+
+    if recommended not in EXPLAINERS:
+
+        booster = get_model(recommended).get_booster()
+
+        import shap
+        EXPLAINERS[recommended] = shap.TreeExplainer(booster)
+
+    return EXPLAINERS[recommended]
 
 # ===============================
 # EXPLAIN PREDICTION
@@ -179,7 +191,7 @@ def explain_prediction(data, recommended, prediction):
         # CREATE INPUT
         # ===============================
         import shap
-        import matplotlib.pyplot as plt
+        
         import seaborn as sns
         df = get_dataset()
 
@@ -190,7 +202,7 @@ def explain_prediction(data, recommended, prediction):
 
         inp = clean_input(inp)
 
-        model = get_model(recommended)
+        
 
         print("\n===== FINAL INPUT CHECK =====")
         print(inp)
@@ -200,9 +212,7 @@ def explain_prediction(data, recommended, prediction):
         # SHAP EXPLAINER
         # ===============================
 
-        booster = model.get_booster()
-
-        explainer = shap.TreeExplainer(booster)
+        explainer = get_explainer(recommended)
 
         X = inp.values
 
@@ -256,12 +266,13 @@ def explain_prediction(data, recommended, prediction):
         # FEATURE IMPORTANCE
         # ===============================
 
-        shap.summary_plot(
-            shap_values,
-            inp,
-            plot_type="bar",
-            show=False
-        )
+        shap.plots.bar(
+    shap.Explanation(
+        values=sample_shap,
+        feature_names=inp.columns
+    ),
+    show=False
+)
 
         bar_plot = plot_to_base64()
 
@@ -357,7 +368,7 @@ def explain_prediction(data, recommended, prediction):
 
         sns.heatmap(
             corr_df.corr(),
-            annot=True,
+            annot=False,
             cmap="coolwarm"
         )
 
@@ -393,7 +404,13 @@ Soil pH: {soil_ph}
         # ===============================
         # RETURN RESPONSE
         # ===============================
+        del shap_values
+        del sample_shap
+        del X
 
+        gc.collect()
+
+        plt.close("all")
         return {
 
             "force_plot": force_plot,
@@ -406,6 +423,7 @@ Soil pH: {soil_ph}
 
             "ai_explanation": explanation_text
         }
+    
 
     except Exception as e:
 
@@ -423,3 +441,9 @@ Soil pH: {soil_ph}
 
             "ai_explanation": None
         }
+    finally:
+
+    
+        plt.close("all")
+
+        gc.collect()
