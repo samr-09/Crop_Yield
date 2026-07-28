@@ -245,6 +245,7 @@ def explain_prediction(data, recommended, prediction):
         )
 
         force_plot = plot_to_base64()
+        print("FORCE DONE", flush=True)
 
         # ===============================
         # WATERFALL PLOT
@@ -261,6 +262,7 @@ def explain_prediction(data, recommended, prediction):
         )
 
         waterfall_plot = plot_to_base64()
+        print("WATERFALL DONE", flush=True)
 
         # ===============================
         # FEATURE IMPORTANCE
@@ -275,6 +277,7 @@ def explain_prediction(data, recommended, prediction):
 )
 
         bar_plot = plot_to_base64()
+        print("BAR DONE", flush=True)
 
         # ===============================
         # SCATTER PLOT
@@ -308,6 +311,7 @@ def explain_prediction(data, recommended, prediction):
         plt.ylabel("Yield")
 
         scatter_plot = plot_to_base64()
+        print("SCATTER DONE", flush=True)
 
         # ===============================
         # YIELD COMPARISON
@@ -331,6 +335,7 @@ def explain_prediction(data, recommended, prediction):
         plt.ylabel("Yield")
 
         comparison_plot = plot_to_base64()
+        print("COMPARISON DONE", flush=True)
 
         # ===============================
         # CORRELATION HEATMAP
@@ -377,6 +382,7 @@ def explain_prediction(data, recommended, prediction):
         )
 
         heatmap_plot = plot_to_base64()
+        print("HEATMAP DONE", flush=True)
 
         # ===============================
         # AI EXPLANATION TEXT

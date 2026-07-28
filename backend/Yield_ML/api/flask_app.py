@@ -28,13 +28,13 @@ def health():
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    print("STEP 1")
+    print("STEP 1", flush=True)
     data = request.json
-    print("STEP 2")
+    print("STEP 2", flush=True)
     prediction = predict_crop(data)
-    print("STEP 3")
+    print("STEP 3", flush=True)
     explanation = explain_prediction(data, prediction["recommended"], prediction)
-    print("STEP 4")
+    print("STEP 4", flush=True)
     response = {
 
         "rice": prediction["rice"],
@@ -52,7 +52,7 @@ def predict():
 
         "ai_explanation": explanation["ai_explanation"]
     }
-    print("STEP 5")
+    print("STEP 5", flush=True)
     return jsonify(response)
 
 
