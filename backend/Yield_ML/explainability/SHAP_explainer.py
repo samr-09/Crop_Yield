@@ -121,7 +121,8 @@ def plot_to_base64():
 
     buffer.close()
 
-    plt.close()
+    plt.close("all")   # <-- change
+    plt.clf()
 
     return img_base64
 
