@@ -110,12 +110,12 @@ xgb_maize.fit(X_train,y_maize_train)
 # SAVE MODELS
 # ======================
 
-joblib.dump(rf_rice,"../models/rf_rice.pkl")
-joblib.dump(rf_wheat,"../models/rf_wheat.pkl")
-joblib.dump(rf_maize,"../models/rf_maize.pkl")
+joblib.dump(rf_rice, "../models/rf_rice.pkl", compress=3)
+joblib.dump(rf_wheat, "../models/rf_wheat.pkl", compress=3)
+joblib.dump(rf_maize, "../models/rf_maize.pkl", compress=3)
 
-joblib.dump(xgb_rice,"../models/xgb_rice.pkl")
-joblib.dump(xgb_wheat,"../models/xgb_wheat.pkl")
-joblib.dump(xgb_maize,"../models/xgb_maize.pkl")
+joblib.dump(xgb_rice, "../models/xgb_rice.pkl", compress=3)
+joblib.dump(xgb_wheat, "../models/xgb_wheat.pkl", compress=3)
+joblib.dump(xgb_maize, "../models/xgb_maize.pkl", compress=3)
 
 print("Models trained and saved")
