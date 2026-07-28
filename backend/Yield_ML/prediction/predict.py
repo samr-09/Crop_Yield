@@ -6,40 +6,99 @@ from prediction.preprocess import create_input
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_DIR = os.path.join(BASE_DIR, "models")
 
-# Cache for models
-MODELS = None
+# ==========================
+# MODEL CACHE
+# ==========================
+
+MODELS = {}
 
 
-def load_models():
+def get_model(model_name):
+    """
+    Lazy-load model only when required.
+    """
+
     global MODELS
 
-    if MODELS is None:
-        MODELS = {
-            "rf_rice": joblib.load(os.path.join(MODEL_DIR, "rf_rice.pkl")),
-            "rf_wheat": joblib.load(os.path.join(MODEL_DIR, "rf_wheat.pkl")),
-            "rf_maize": joblib.load(os.path.join(MODEL_DIR, "rf_maize.pkl")),
+    if model_name not in MODELS:
 
-            "xgb_rice": joblib.load(os.path.join(MODEL_DIR, "xgb_rice.pkl")),
-            "xgb_wheat": joblib.load(os.path.join(MODEL_DIR, "xgb_wheat.pkl")),
-            "xgb_maize": joblib.load(os.path.join(MODEL_DIR, "xgb_maize.pkl")),
-        }
+        print(f"Loading {model_name}...", flush=True)
 
-    return MODELS
+        MODELS[model_name] = joblib.load(
+            os.path.join(MODEL_DIR, f"{model_name}.pkl")
+        )
+
+    return MODELS[model_name]
 
 
-def ensemble(rf, xgb, X):
-    return (rf.predict(X) + xgb.predict(X)) / 2
+# ==========================
+# ENSEMBLE
+# ==========================
 
+def ensemble(rf_model, xgb_model, X):
+
+    rf_pred = rf_model.predict(X)
+
+    xgb_pred = xgb_model.predict(X)
+
+    return (rf_pred + xgb_pred) / 2
+
+
+# ==========================
+# PREDICT
+# ==========================
 
 def predict_crop(data):
 
-    models = load_models()
+    print("PREDICT START", flush=True)
 
     inp = create_input(data)
 
-    rice = ensemble(models["rf_rice"], models["xgb_rice"], inp)[0]
-    wheat = ensemble(models["rf_wheat"], models["xgb_wheat"], inp)[0]
-    maize = ensemble(models["rf_maize"], models["xgb_maize"], inp)[0]
+    print("INPUT READY", flush=True)
+
+    # ---------------- Rice ----------------
+
+    rf_rice = get_model("rf_rice")
+    print("RF RICE READY", flush=True)
+
+    xgb_rice = get_model("xgb_rice")
+    print("XGB RICE READY", flush=True)
+
+    rice = ensemble(
+        rf_rice,
+        xgb_rice,
+        inp
+    )[0]
+
+    # ---------------- Wheat ----------------
+
+    rf_wheat = get_model("rf_wheat")
+    print("RF WHEAT READY", flush=True)
+
+    xgb_wheat = get_model("xgb_wheat")
+    print("XGB WHEAT READY", flush=True)
+
+    wheat = ensemble(
+        rf_wheat,
+        xgb_wheat,
+        inp
+    )[0]
+
+    # ---------------- Maize ----------------
+
+    rf_maize = get_model("rf_maize")
+    print("RF MAIZE READY", flush=True)
+
+    xgb_maize = get_model("xgb_maize")
+    print("XGB MAIZE READY", flush=True)
+
+    maize = ensemble(
+        rf_maize,
+        xgb_maize,
+        inp
+    )[0]
+
+    print("ALL PREDICTIONS DONE", flush=True)
 
     yields = {
         "rice": float(rice),
@@ -48,6 +107,9 @@ def predict_crop(data):
     }
 
     recommended = max(yields, key=yields.get)
+
     yields["recommended"] = recommended
+
+    print("PREDICT END", flush=True)
 
     return yields
