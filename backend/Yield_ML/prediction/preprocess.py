@@ -1,20 +1,29 @@
+import os
 import pandas as pd
 import joblib
+
+# ===============================
+# BASE DIRECTORY
+# ===============================
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ===============================
 # LOAD ENCODERS
 # ===============================
 
-state_encoder = joblib.load("../utils/state_encoder.pkl")
-district_encoder = joblib.load("../utils/district_encoder.pkl")
-season_encoder = joblib.load("../utils/season_encoder.pkl")
-soil_encoder = joblib.load("../utils/soil_encoder.pkl")
+state_encoder = joblib.load(os.path.join(BASE_DIR, "utils", "state_encoder.pkl"))
+district_encoder = joblib.load(os.path.join(BASE_DIR, "utils", "district_encoder.pkl"))
+season_encoder = joblib.load(os.path.join(BASE_DIR, "utils", "season_encoder.pkl"))
+soil_encoder = joblib.load(os.path.join(BASE_DIR, "utils", "soil_encoder.pkl"))
 
 # ===============================
 # LOAD DATASET
 # ===============================
 
-df = pd.read_csv("../dataset/final_data_for_crop_yield_new.csv")
+df = pd.read_csv(
+    os.path.join(BASE_DIR, "dataset", "final_data_for_crop_yield_new.csv")
+)
 
 df["state"] = df["state"].str.strip().str.lower().str.replace(" ", "_")
 df["district"] = df["district"].str.strip().str.lower().str.replace(" ", "_")
@@ -31,10 +40,8 @@ def create_input(data):
     district_name = data["district"].strip().lower().replace(" ", "_")
     season_name = data["season"].strip().lower().replace(" ", "_")
 
-    # encode values
     season = season_encoder.transform([season_name])[0]
 
-    # find district row
     rows = df[df["district"] == district_name]
 
     if rows.empty:
@@ -44,7 +51,6 @@ def create_input(data):
 
     soil = soil_encoder.transform([row["soil_type"]])[0]
 
-    # IMPORTANT: only features used during training
     inp = pd.DataFrame([{
         "latitude": row["latitude"],
         "longitude": row["longitude"],
