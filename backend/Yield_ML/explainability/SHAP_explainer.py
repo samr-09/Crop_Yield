@@ -1,11 +1,11 @@
 import matplotlib
 matplotlib.use("Agg")
 
-import shap
+
 import numpy as np
 import joblib
-import matplotlib.pyplot as plt
-import seaborn as sns
+
+
 import pandas as pd
 import base64
 from io import BytesIO
@@ -28,57 +28,82 @@ DATA_PATH = os.path.join(
 )
 
 # ===============================
-# LOAD MODELS
+# MODEL CACHE
 # ===============================
 
-xgb_rice = joblib.load(
-    os.path.join(MODEL_DIR, "xgb_rice.pkl")
-)
+MODELS = None
 
-xgb_wheat = joblib.load(
-    os.path.join(MODEL_DIR, "xgb_wheat.pkl")
-)
 
-xgb_maize = joblib.load(
-    os.path.join(MODEL_DIR, "xgb_maize.pkl")
-)
+def load_models():
+
+    global MODELS
+
+    if MODELS is None:
+
+        MODELS = {
+
+            "rice": joblib.load(
+                os.path.join(MODEL_DIR, "xgb_rice.pkl")
+            ),
+
+            "wheat": joblib.load(
+                os.path.join(MODEL_DIR, "xgb_wheat.pkl")
+            ),
+
+            "maize": joblib.load(
+                os.path.join(MODEL_DIR, "xgb_maize.pkl")
+            )
+        }
+
+    return MODELS
 
 # ===============================
-# LOAD DATASET
+# DATASET CACHE
 # ===============================
 
-df = pd.read_csv(DATA_PATH)
+DF = None
 
-# numeric conversions
-df["temperature"] = pd.to_numeric(
-    df["temperature"],
-    errors="coerce"
-)
 
-if "pH" in df.columns:
+def get_dataset():
 
-    df["pH"] = pd.to_numeric(
-        df["pH"],
-        errors="coerce"
-    )
+    global DF
 
-if "ph" in df.columns:
+    if DF is None:
 
-    df["ph"] = pd.to_numeric(
-        df["ph"],
-        errors="coerce"
-    )
+        DF = pd.read_csv(DATA_PATH)
 
-df["seasonal_rainfall"] = pd.to_numeric(
-    df["seasonal_rainfall"],
-    errors="coerce"
-)
+        DF["temperature"] = pd.to_numeric(
+            DF["temperature"],
+            errors="coerce"
+        )
+
+        if "pH" in DF.columns:
+
+            DF["pH"] = pd.to_numeric(
+                DF["pH"],
+                errors="coerce"
+            )
+
+        if "ph" in DF.columns:
+
+            DF["ph"] = pd.to_numeric(
+                DF["ph"],
+                errors="coerce"
+            )
+
+        DF["seasonal_rainfall"] = pd.to_numeric(
+            DF["seasonal_rainfall"],
+            errors="coerce"
+        )
+
+    return DF
 
 # ===============================
 # CONVERT PLOT TO BASE64
 # ===============================
 
 def plot_to_base64():
+    import matplotlib.pyplot as plt
 
     buffer = BytesIO()
 
@@ -137,17 +162,9 @@ def clean_input(inp):
 
 def get_model(recommended):
 
-    if recommended == "rice":
+    models = load_models()
 
-        return xgb_rice
-
-    elif recommended == "wheat":
-
-        return xgb_wheat
-
-    else:
-
-        return xgb_maize
+    return models[recommended]
 
 # ===============================
 # EXPLAIN PREDICTION
@@ -160,6 +177,10 @@ def explain_prediction(data, recommended, prediction):
         # ===============================
         # CREATE INPUT
         # ===============================
+        import shap
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        df = get_dataset()
 
         inp = create_input(data)
 
