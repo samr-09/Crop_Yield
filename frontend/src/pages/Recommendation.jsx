@@ -54,7 +54,7 @@ const Recommendation = () => {
       const data = await res.json();
       setResult(data);
 
-       await fetch("http://localhost:5000/api/predictions/save", {
+       await fetch("https://crop-yield-backend-r0mu.onrender.com/api/predictions/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
