@@ -1,0 +1,88 @@
+# ==========================
+# OS Files
+# ==========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================
+# Git
+# ==========================
+.git
+.gitattributes
+
+# ==========================
+# Environment Variables
+# ==========================
+.env
+.env.*
+!.env.example
+
+# ==========================
+# Node.js
+# ==========================
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build
+**/dist/
+**/build/
+
+# ==========================
+# Python
+# ==========================
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
+**/venv/
+**/.venv/
+**/env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ==========================
+# IDE
+# ==========================
+.vscode/
+.idea/
+
+# ==========================
+# Logs
+# ==========================
+*.log
+
+# ==========================
+# Keep ML Assets
+# ==========================
+!backend/Yield_ML/models/**
+!backend/Yield_ML/utils/**
+!backend/Yield_ML/dataset/**
+!backend/Yield_ML/**/*.pkl
+!backend/Yield_ML/**/*.csv
+
+# ==========================
+# Keep Frontend Assets
+# ==========================
+!frontend/src/**/*.json
+!frontend/public/**/*.json
+!frontend/src/**/*.geojson
+!frontend/public/**/*.geojson
+
+# ==========================
+# Keep Docs
+# ==========================
+!README.md
+!requirements.txt
+!package.json
+!package-lock.json
