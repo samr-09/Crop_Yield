@@ -31,7 +31,20 @@ LineChart,
 Line,
 CartesianGrid
 } from "recharts"
+import L from "leaflet";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
+const marker = new L.Icon({
+    iconUrl: markerIcon,
+    iconRetinaUrl: markerIcon2x,
+    shadowUrl: markerShadow,
+    iconSize: [25,41],
+    iconAnchor: [12,41],
+    popupAnchor: [1,-34],
+    shadowSize: [41,41]
+});
 
 /* ---------------- MAP CLICK ---------------- */
 
@@ -672,7 +685,8 @@ className="fixed top-6 left-6 z-[2000] bg-white shadow-lg rounded-full p-3 hover
                 <ZoomToDistrict lat={lat} lon={lon} />
 
                 {lat && lon && (
-                    <Marker position={[lat,lon]} />
+                    <Marker position={[lat,lon]}
+    icon={marker} />
                 )}
 
                 {/* BEFORE PREDICTION */}
