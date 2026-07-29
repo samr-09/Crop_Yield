@@ -54,7 +54,7 @@ def create_input(data):
     inp = pd.DataFrame([{
         "latitude": row["latitude"],
         "longitude": row["longitude"],
-        "year": data["year"],
+        
         "season": season,
         "temperature": row["temperature"],
         "soil_type": soil,

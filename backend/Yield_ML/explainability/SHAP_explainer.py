@@ -257,7 +257,7 @@ def generate_input_summary(inp, data):
 
         "season": data["season"],
 
-        "year": int(inp.iloc[0]["year"]),
+        
 
         "temperature": format_value(
             inp.iloc[0]["temperature"]
