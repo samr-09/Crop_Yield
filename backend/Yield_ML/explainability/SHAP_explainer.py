@@ -1,6 +1,6 @@
 import matplotlib
 
-from backend.Yield_ML import prediction
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
