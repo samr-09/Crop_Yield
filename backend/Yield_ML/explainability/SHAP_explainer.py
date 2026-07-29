@@ -1,4 +1,6 @@
 import matplotlib
+
+from backend.Yield_ML import prediction
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -179,6 +181,275 @@ def get_explainer(recommended):
 
     return EXPLAINERS[recommended]
 
+def format_value(value, digits=2):
+
+    try:
+        return round(float(value), digits)
+    except:
+        return value
+
+def get_soil_ph(inp):
+
+    if "ph" in inp.columns:
+        return float(inp.iloc[0]["ph"])
+
+    if "pH" in inp.columns:
+        return float(inp.iloc[0]["pH"])
+
+    return None
+def percentage_difference(a, b):
+
+    if b == 0:
+        return 0
+
+    return ((a - b) / b) * 100
+def rank_shap_features(sample_shap, feature_names):
+
+    features = []
+
+    for name, value in zip(feature_names, sample_shap):
+
+        features.append({
+
+            "feature": name,
+
+            "value": float(value),
+
+            "abs_value": abs(float(value))
+        })
+
+    features.sort(
+
+        key=lambda x: x["abs_value"],
+
+        reverse=True
+    )
+
+    return features
+def get_positive_features(ranked):
+
+    return [
+
+        f for f in ranked
+
+        if f["value"] > 0
+    ]
+def get_negative_features(ranked):
+
+    return [
+
+        f for f in ranked
+
+        if f["value"] < 0
+    ]
+def generate_input_summary(inp, data):
+
+    soil_ph = get_soil_ph(inp)
+
+    return {
+
+        "state": data["state"],
+
+        "district": data["district"],
+
+        "season": data["season"],
+
+        "year": int(inp.iloc[0]["year"]),
+
+        "temperature": format_value(
+            inp.iloc[0]["temperature"]
+        ),
+
+        "rainfall": format_value(
+            inp.iloc[0]["seasonal_rainfall"]
+        ),
+
+        "soil_ph": format_value(
+            soil_ph
+        ),
+
+        "soil_type": data["soil_type"],
+
+        "latitude": format_value(
+            inp.iloc[0]["latitude"],4
+        ),
+
+        "longitude": format_value(
+            inp.iloc[0]["longitude"],4
+        )
+    }
+def generate_prediction_summary(prediction, recommended):
+
+    rice = prediction["rice"]
+
+    wheat = prediction["wheat"]
+
+    maize = prediction["maize"]
+
+    highest = prediction[recommended]
+
+    return {
+
+        "recommended_crop": recommended.upper(),
+
+        "predicted_yield": format_value(highest),
+
+        "rice_yield": format_value(rice),
+
+        "wheat_yield": format_value(wheat),
+
+        "maize_yield": format_value(maize),
+
+        "rice_difference": format_value(
+            percentage_difference(
+                highest,
+                rice
+            )
+        ),
+
+        "wheat_difference": format_value(
+            percentage_difference(
+                highest,
+                wheat
+            )
+        ),
+
+        "maize_difference": format_value(
+            percentage_difference(
+                highest,
+                maize
+            )
+        )
+    }
+def generate_force_interpretation(
+    positive_features,
+    negative_features,
+    prediction_summary
+):
+
+    text = (
+        f"The model recommends "
+        f"{prediction_summary['recommended_crop']} "
+        f"with an estimated yield of "
+        f"{prediction_summary['predicted_yield']} t/ha.\n\n"
+    )
+    if positive_features:
+        text += "Positive contributors:\n"
+
+        for f in positive_features[:3]:
+
+            text += (
+                f"• {f['feature']} "
+                f"(SHAP = +{abs(f['value']):.3f})\n"
+            )
+    if negative_features:
+        text += "\nNegative contributors:\n"
+        for f in negative_features[:2]:
+            text += (
+                f"• {f['feature']} "
+                f"(SHAP = -{abs(f['value']):.3f})\n"
+            )
+    return text
+def generate_waterfall_interpretation(
+    positive_features,
+    negative_features
+):
+
+    text = (
+        "The waterfall plot starts from the model's baseline prediction. "
+    )
+
+    if positive_features:
+
+        text += (
+            f"The largest increase comes from "
+            f"{positive_features[0]['feature']}. "
+        )
+
+    if negative_features:
+
+        text += (
+            f"The strongest reducing factor is "
+            f"{negative_features[0]['feature']}. "
+        )
+
+    text += (
+        "The final prediction is obtained after combining all positive "
+        "and negative SHAP contributions."
+    )
+
+    return text
+def generate_bar_interpretation(ranked):
+
+    text = "Most influential features:\n\n"
+
+    for i, f in enumerate(ranked[:5], start=1):
+
+        text += (
+            f"{i}. {f['feature']} "
+            f"(Importance = {abs(f['value']):.3f})\n"
+        )
+
+    return text
+def generate_scatter_interpretation(inp):
+
+    rainfall = float(
+        inp.iloc[0]["seasonal_rainfall"]
+    )
+
+    return (
+        f"The entered seasonal rainfall is "
+        f"{rainfall:.2f} mm. "
+        "The scatter plot helps compare this rainfall "
+        "with historical yield observations."
+    )
+def generate_heatmap_interpretation():
+
+    return (
+        "The correlation heatmap illustrates the relationships "
+        "among agronomic variables. Strong positive or negative "
+        "correlations indicate that changes in one feature are "
+        "associated with changes in another."
+    )
+def generate_comparison_interpretation(
+    prediction_summary
+):
+
+    crop = prediction_summary["recommended_crop"]
+
+    yield_value = prediction_summary["predicted_yield"]
+
+    return (
+        f"{crop} has the highest predicted yield "
+        f"({yield_value} t/ha) among all candidate crops, "
+        "therefore it is selected as the recommended crop."
+    )
+def generate_final_recommendation(
+    prediction_summary,
+    positive_features
+):
+
+    crop = prediction_summary["recommended_crop"]
+
+    text = (
+        f"Recommended Crop: {crop}\n\n"
+    )
+
+    text += (
+        f"Predicted Yield: "
+        f"{prediction_summary['predicted_yield']} t/ha\n\n"
+    )
+
+    text += "Key supporting factors:\n"
+
+    for f in positive_features[:3]:
+
+        text += (
+            f"✓ {f['feature']} "
+            f"(SHAP = +{abs(f['value']):.3f})\n"
+        )
+
+    return text
 # ===============================
 # EXPLAIN PREDICTION
 # ===============================
@@ -190,9 +461,10 @@ def explain_prediction(data, recommended, prediction):
         # ===============================
         # CREATE INPUT
         # ===============================
+
         import shap
-        
         import seaborn as sns
+
         df = get_dataset()
 
         inp = create_input(data)
@@ -201,8 +473,6 @@ def explain_prediction(data, recommended, prediction):
         print(inp)
 
         inp = clean_input(inp)
-
-        
 
         print("\n===== FINAL INPUT CHECK =====")
         print(inp)
@@ -222,15 +492,69 @@ def explain_prediction(data, recommended, prediction):
 
         # regression safe fix
         if isinstance(shap_values, list):
-
             shap_values = shap_values[0]
 
         if isinstance(base_value, (list, np.ndarray)):
-
             base_value = base_value[0]
 
         sample_shap = shap_values[0]
 
+        # ===============================
+        # PREPARE INTERPRETATION DATA
+        # ===============================
+
+        ranked = rank_shap_features(
+            sample_shap,
+            inp.columns
+        )
+
+        positive_features = get_positive_features(
+            ranked
+        )
+
+        negative_features = get_negative_features(
+            ranked
+        )
+
+        input_summary = generate_input_summary(
+            inp,
+            data
+        )
+
+        prediction_summary = generate_prediction_summary(
+            prediction,
+            recommended
+        )
+
+        force_interpretation = generate_force_interpretation(
+            positive_features,
+            negative_features,
+            prediction_summary
+        )
+
+        waterfall_interpretation = generate_waterfall_interpretation(
+            positive_features,
+            negative_features
+        )
+
+        bar_interpretation = generate_bar_interpretation(
+            ranked
+        )
+
+        scatter_interpretation = generate_scatter_interpretation(
+            inp
+        )
+
+        heatmap_interpretation = generate_heatmap_interpretation()
+
+        comparison_interpretation = generate_comparison_interpretation(
+            prediction_summary
+        )
+
+        final_recommendation = generate_final_recommendation(
+            prediction_summary,
+            positive_features
+        )
         # ===============================
         # FORCE PLOT
         # ===============================
@@ -250,7 +574,6 @@ def explain_prediction(data, recommended, prediction):
         # ===============================
         # WATERFALL PLOT
         # ===============================
-
         shap.plots.waterfall(
             shap.Explanation(
                 values=sample_shap,
@@ -269,12 +592,12 @@ def explain_prediction(data, recommended, prediction):
         # ===============================
 
         shap.plots.bar(
-    shap.Explanation(
-        values=sample_shap,
-        feature_names=inp.columns
-    ),
-    show=False
-)
+            shap.Explanation(
+                values=sample_shap,
+                feature_names=inp.columns
+            ),
+            show=False
+        )
 
         bar_plot = plot_to_base64()
         print("BAR DONE", flush=True)
@@ -419,16 +742,31 @@ Soil pH: {soil_ph}
         plt.close("all")
         return {
 
-            "force_plot": force_plot,
-            "waterfall_plot": waterfall_plot,
-            "bar_plot": bar_plot,
+    "input_summary": input_summary,
+    "prediction_summary": prediction_summary,
 
-            "scatter_plot": scatter_plot,
-            "comparison_plot": comparison_plot,
-            "heatmap_plot": heatmap_plot,
+    "force_plot": force_plot,
+    "force_interpretation": force_interpretation,
 
-            "ai_explanation": explanation_text
-        }
+    "waterfall_plot": waterfall_plot,
+    "waterfall_interpretation": waterfall_interpretation,
+
+    "bar_plot": bar_plot,
+    "bar_interpretation": bar_interpretation,
+
+    "scatter_plot": scatter_plot,
+    "scatter_interpretation": scatter_interpretation,
+
+    "comparison_plot": comparison_plot,
+    "comparison_interpretation": comparison_interpretation,
+
+    "heatmap_plot": heatmap_plot,
+    "heatmap_interpretation": heatmap_interpretation,
+
+    "final_recommendation": final_recommendation,
+
+    "ai_explanation": explanation_text
+}
     
 
     except Exception as e:
@@ -437,16 +775,31 @@ Soil pH: {soil_ph}
 
         return {
 
-            "force_plot": None,
-            "waterfall_plot": None,
-            "bar_plot": None,
+    "input_summary": None,
+    "prediction_summary": None,
 
-            "scatter_plot": None,
-            "comparison_plot": None,
-            "heatmap_plot": None,
+    "force_plot": None,
+    "force_interpretation": None,
 
-            "ai_explanation": None
-        }
+    "waterfall_plot": None,
+    "waterfall_interpretation": None,
+
+    "bar_plot": None,
+    "bar_interpretation": None,
+
+    "scatter_plot": None,
+    "scatter_interpretation": None,
+
+    "comparison_plot": None,
+    "comparison_interpretation": None,
+
+    "heatmap_plot": None,
+    "heatmap_interpretation": None,
+
+    "final_recommendation": None,
+
+    "ai_explanation": None
+}
     finally:
 
     
