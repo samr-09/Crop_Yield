@@ -234,7 +234,7 @@ function GeoPrediction() {
             })
 
             const data = await res.json()
-            console.log(data)
+            console.log(JSON.stringify(data, null, 2))
 
             setPrediction(data)
 
