@@ -37,21 +37,40 @@ def predict():
     print("STEP 4", flush=True)
     response = {
 
-        "rice": prediction["rice"],
-        "wheat": prediction["wheat"],
-        "maize": prediction["maize"],
-        "recommended": prediction["recommended"],
+    "rice": prediction["rice"],
+    "wheat": prediction["wheat"],
+    "maize": prediction["maize"],
+    "recommended": prediction["recommended"],
 
-        "force_plot": explanation["force_plot"],
-        "waterfall_plot": explanation["waterfall_plot"],
-        "bar_plot": explanation["bar_plot"],
+    # -------------------------
+    # NEW XAI FIELDS
+    # -------------------------
 
-        "scatter_plot": explanation["scatter_plot"],
-        "comparison_plot": explanation["comparison_plot"],
-        "heatmap_plot": explanation["heatmap_plot"],
+    "input_summary": explanation["input_summary"],
+    "prediction_summary": explanation["prediction_summary"],
 
-        "ai_explanation": explanation["ai_explanation"]
-    }
+    "force_plot": explanation["force_plot"],
+    "force_interpretation": explanation["force_interpretation"],
+
+    "waterfall_plot": explanation["waterfall_plot"],
+    "waterfall_interpretation": explanation["waterfall_interpretation"],
+
+    "bar_plot": explanation["bar_plot"],
+    "bar_interpretation": explanation["bar_interpretation"],
+
+    "scatter_plot": explanation["scatter_plot"],
+    "scatter_interpretation": explanation["scatter_interpretation"],
+
+    "comparison_plot": explanation["comparison_plot"],
+    "comparison_interpretation": explanation["comparison_interpretation"],
+
+    "heatmap_plot": explanation["heatmap_plot"],
+    "heatmap_interpretation": explanation["heatmap_interpretation"],
+
+    "final_recommendation": explanation["final_recommendation"],
+
+    "ai_explanation": explanation["ai_explanation"]
+}
     print("STEP 5", flush=True)
     return jsonify(response)
 
