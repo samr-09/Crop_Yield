@@ -886,12 +886,7 @@ function GeoPrediction() {
                                         </p>
                                     </div>
 
-                                    <div>
-                                        <p className="text-gray-500 text-sm">Soil Type</p>
-                                        <p className="font-semibold">
-                                            {prediction.input_summary.soil_type}
-                                        </p>
-                                    </div>
+                                    
 
                                     <div>
                                         <p className="text-gray-500 text-sm">Latitude</p>

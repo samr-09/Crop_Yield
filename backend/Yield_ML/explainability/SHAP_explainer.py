@@ -268,7 +268,7 @@ def generate_input_summary(inp, data):
             soil_ph
         ),
 
-        "soil_type": data["soil_type"],
+        
 
         "latitude": format_value(
             inp.iloc[0]["latitude"],4
