@@ -542,14 +542,21 @@ function GeoPrediction() {
                                 ))}
 
                             </select>
-
+<h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
+    Geographic Coordinates
+</h3>
+<label className="block text-sm font-medium text-gray-700 mb-2">
+    Latitude
+</label>
                             <input
                                 value={lat || ""}
                                 placeholder="Latitude"
                                 disabled
                                 className="w-full p-3 border rounded-xl bg-gray-100"
                             />
-
+<label className="block text-sm font-medium text-gray-700 mt-4 mb-2">
+    Longitude
+</label>
                             <input
                                 value={lon || ""}
                                 placeholder="Longitude"
