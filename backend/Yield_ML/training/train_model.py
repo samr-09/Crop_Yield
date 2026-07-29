@@ -60,7 +60,7 @@ joblib.dump(le_soil, "../utils/soil_encoder.pkl")
 features = [
     "latitude",
     "longitude",
-    "year",
+    
     "season",
     "temperature",
     "soil_type",
