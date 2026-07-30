@@ -496,163 +496,163 @@ def generate_final_recommendation(
         )
 
     return text
-def generate_counterfactual(inp, recommended):
+# def generate_counterfactual(inp, recommended):
 
-    current = inp.copy()
+#     current = inp.copy()
 
-    rf_model = get_rf_model(recommended)
-    xgb_model = get_xgb_model(recommended)
+#     rf_model = get_rf_model(recommended)
+#     xgb_model = get_xgb_model(recommended)
 
-    temp0 = float(current.iloc[0]["temperature"])
-    rain0 = float(current.iloc[0]["seasonal_rainfall"])
-    ph0 = float(current.iloc[0]["ph"])
+#     temp0 = float(current.iloc[0]["temperature"])
+#     rain0 = float(current.iloc[0]["seasonal_rainfall"])
+#     ph0 = float(current.iloc[0]["ph"])
 
-    temperatures = np.arange(temp0 - 2.0, temp0 + 2.01, 0.5)
-    rainfalls = np.arange(max(0, rain0 - 50), rain0 + 50.1, 10)
-    ph_values = np.arange(max(4.5, ph0 - 0.5), min(8.5, ph0 + 0.51), 0.1)
+#     temperatures = np.arange(temp0 - 2.0, temp0 + 2.01, 0.5)
+#     rainfalls = np.arange(max(0, rain0 - 50), rain0 + 50.1, 10)
+#     ph_values = np.arange(max(4.5, ph0 - 0.5), min(8.5, ph0 + 0.51), 0.1)
 
-    # Generate all candidates
-    candidates = []
+#     # Generate all candidates
+#     candidates = []
 
-    for t in temperatures:
-        for r in rainfalls:
-            for p in ph_values:
+#     for t in temperatures:
+#         for r in rainfalls:
+#             for p in ph_values:
 
-                candidate = current.copy()
+#                 candidate = current.copy()
 
-                candidate.loc[:, "temperature"] = t
-                candidate.loc[:, "seasonal_rainfall"] = r
-                candidate.loc[:, "ph"] = p
+#                 candidate.loc[:, "temperature"] = t
+#                 candidate.loc[:, "seasonal_rainfall"] = r
+#                 candidate.loc[:, "ph"] = p
 
-                candidates.append(candidate)
+#                 candidates.append(candidate)
 
-    all_candidates = pd.concat(candidates, ignore_index=True)
+#     all_candidates = pd.concat(candidates, ignore_index=True)
 
-    # Ensemble prediction (ONLY TWO predict() CALLS)
-    rf_preds = rf_model.predict(all_candidates)
-    xgb_preds = xgb_model.predict(all_candidates)
+#     # Ensemble prediction (ONLY TWO predict() CALLS)
+#     rf_preds = rf_model.predict(all_candidates)
+#     xgb_preds = xgb_model.predict(all_candidates)
 
-    preds = (rf_preds + xgb_preds) / 2
+#     preds = (rf_preds + xgb_preds) / 2
 
-    # Current prediction
-    current_prediction = (
-    float(rf_model.predict(current)[0]) +
-    float(xgb_model.predict(current)[0])
-) / 2
+#     # Current prediction
+#     current_prediction = (
+#     float(rf_model.predict(current)[0]) +
+#     float(xgb_model.predict(current)[0])
+# ) / 2
 
-    # Distance penalty
-    temp_change = np.abs(all_candidates["temperature"].values - temp0)
-    rain_change = np.abs(all_candidates["seasonal_rainfall"].values - rain0)
-    ph_change = np.abs(all_candidates["ph"].values - ph0)
+#     # Distance penalty
+#     temp_change = np.abs(all_candidates["temperature"].values - temp0)
+#     rain_change = np.abs(all_candidates["seasonal_rainfall"].values - rain0)
+#     ph_change = np.abs(all_candidates["ph"].values - ph0)
 
-    distance = (
-        temp_change / 2 +
-        rain_change / 50 +
-        ph_change / 0.5
-    )
+#     distance = (
+#         temp_change / 2 +
+#         rain_change / 50 +
+#         ph_change / 0.5
+#     )
 
-    scores = preds - (0.05 * distance)
+#     scores = preds - (0.05 * distance)
 
-    best_idx = np.argmax(scores)
+#     best_idx = np.argmax(scores)
 
-    best_prediction = float(preds[best_idx])
-    best_input = all_candidates.iloc[[best_idx]].copy()
+#     best_prediction = float(preds[best_idx])
+#     best_input = all_candidates.iloc[[best_idx]].copy()
 
-    print("=" * 50)
-    print("Current")
-    print(temp0, rain0, ph0)
+#     print("=" * 50)
+#     print("Current")
+#     print(temp0, rain0, ph0)
 
-    print("Suggested")
-    print(best_input[[
-        "temperature",
-        "seasonal_rainfall",
-        "ph"
-    ]])
+#     print("Suggested")
+#     print(best_input[[
+#         "temperature",
+#         "seasonal_rainfall",
+#         "ph"
+#     ]])
 
-    print("Current Yield :", current_prediction)
-    print("Best Yield    :", best_prediction)
-    print("=" * 50)
+#     print("Current Yield :", current_prediction)
+#     print("Best Yield    :", best_prediction)
+#     print("=" * 50)
 
-    plt.figure(figsize=(6.5, 4), dpi=120)
+#     plt.figure(figsize=(6.5, 4), dpi=120)
 
-    labels = ["Temperature", "Soil pH", "Rainfall"]
+#     labels = ["Temperature", "Soil pH", "Rainfall"]
 
-    before = np.array([
-    temp0,
-    ph0,
-    rain0
-])
+#     before = np.array([
+#     temp0,
+#     ph0,
+#     rain0
+# ])
 
-    after = np.array([
-    float(best_input.iloc[0]["temperature"]),
-    float(best_input.iloc[0]["ph"]),
-    float(best_input.iloc[0]["seasonal_rainfall"])
-])
+#     after = np.array([
+#     float(best_input.iloc[0]["temperature"]),
+#     float(best_input.iloc[0]["ph"]),
+#     float(best_input.iloc[0]["seasonal_rainfall"])
+# ])
 
-# Normalize with respect to current values
-    before_norm = np.ones_like(before)
-    after_norm = after / before
+# # Normalize with respect to current values
+#     before_norm = np.ones_like(before)
+#     after_norm = after / before
 
-    y = np.arange(len(labels))
-    height = 0.34
+#     y = np.arange(len(labels))
+#     height = 0.34
 
-    plt.barh(y + height/2, before_norm, height, label="Observed")
-    plt.barh(y - height/2, after_norm, height, label="Counterfactual")
+#     plt.barh(y + height/2, before_norm, height, label="Observed")
+#     plt.barh(y - height/2, after_norm, height, label="Counterfactual")
 
-    plt.yticks(y, labels)
+#     plt.yticks(y, labels)
 
-    plt.xlabel("Relative Value (Current = 1.0)")
-    plt.title("Counterfactual Feature Comparison")
+#     plt.xlabel("Relative Value (Current = 1.0)")
+#     plt.title("Counterfactual Feature Comparison")
 
-    plt.xlim(0.8, 1.2)
+#     plt.xlim(0.8, 1.2)
 
-    plt.grid(axis="x", linestyle="--", alpha=0.4)
+#     plt.grid(axis="x", linestyle="--", alpha=0.4)
 
-    plt.legend(loc="lower right")
+#     plt.legend(loc="lower right")
 
-    plt.tight_layout()
+#     plt.tight_layout()
 
-    plot = plot_to_base64()
-    improvement = (
-        (best_prediction - current_prediction)
-        / current_prediction
-    ) * 100
+#     plot = plot_to_base64()
+#     improvement = (
+#         (best_prediction - current_prediction)
+#         / current_prediction
+#     ) * 100
 
-    interpretation = f"""
-    Recommended Adjustments
-    ────────────────────────
-    🌡 Temperature
-    {temp0:.2f}°C → {after[0]:.2f}°C
+#     interpretation = f"""
+#     Recommended Adjustments
+#     ────────────────────────
+#     🌡 Temperature
+#     {temp0:.2f}°C → {after[0]:.2f}°C
 
-    🧪 Soil pH
-    {ph0:.2f} → {after[1]:.2f}
+#     🧪 Soil pH
+#     {ph0:.2f} → {after[1]:.2f}
 
-    🌧 Seasonal Rainfall
-    {rain0:.2f} mm → {after[2]:.2f} mm
-    ────────────────────────
-    Predicted Yield
+#     🌧 Seasonal Rainfall
+#     {rain0:.2f} mm → {after[2]:.2f} mm
+#     ────────────────────────
+#     Predicted Yield
 
-    Current
-    {current_prediction:.4f} t/ha
+#     Current
+#     {current_prediction:.4f} t/ha
 
-    Optimized
-    {best_prediction:.4f} t/ha
+#     Optimized
+#     {best_prediction:.4f} t/ha
 
-    ▲ +{improvement:.2f}%
-    ────────────────────────────────
-    Model Insight
+#     ▲ +{improvement:.2f}%
+#     ────────────────────────────────
+#     Model Insight
 
-    The recommended values represent the most favorable environmental conditions identified by the ensemble model within the explored search space, balancing yield improvement with minimal deviation from the original input conditions.
-    """
+#     The recommended values represent the most favorable environmental conditions identified by the ensemble model within the explored search space, balancing yield improvement with minimal deviation from the original input conditions.
+#     """
 
-    print("=== COUNTERFACTUAL GENERATED ===")
-    print(best_prediction)
-    print(plot is not None)
+#     print("=== COUNTERFACTUAL GENERATED ===")
+#     print(best_prediction)
+#     print(plot is not None)
 
-    return {
-        "plot": plot,
-        "interpretation": interpretation
-    }
+#     return {
+#         "plot": plot,
+#         "interpretation": interpretation
+#     }
 # ===============================
 # EXPLAIN PREDICTION
 # ===============================
@@ -759,174 +759,174 @@ def explain_prediction(data, recommended, prediction):
             prediction_summary,
             positive_features
         )
-        # ===============================
-        # COUNTERFACTUAL
-        # ===============================
-        start = time.time()
-        counterfactual = generate_counterfactual(
-            inp.copy(),
-            recommended
-        )
-        print(f"Counterfactual: {time.time()-start:.2f} sec")
+        # # ===============================
+        # # COUNTERFACTUAL
+        # # ===============================
+        # start = time.time()
+        # counterfactual = generate_counterfactual(
+        #     inp.copy(),
+        #     recommended
+        # )
+        # print(f"Counterfactual: {time.time()-start:.2f} sec")
         
         # ===============================
         # FORCE PLOT
         # ===============================
-        # start = time.time()
-        # shap.force_plot(
-        #     base_value,
-        #     sample_shap,
-        #     X[0],
-        #     feature_names=inp.columns,
-        #     matplotlib=True,
-        #     show=False
-        # )
+        start = time.time()
+        shap.force_plot(
+            base_value,
+            sample_shap,
+            X[0],
+            feature_names=inp.columns,
+            matplotlib=True,
+            show=False
+        )
 
-        # force_plot = plot_to_base64()
-        # print(f"Force: {time.time()-start:.2f} sec")
-        # print("FORCE DONE", flush=True)
+        force_plot = plot_to_base64()
+        print(f"Force: {time.time()-start:.2f} sec")
+        print("FORCE DONE", flush=True)
 
         # ===============================
         # WATERFALL PLOT
         # ===============================
-        # start = time.time()
-        # shap.plots.waterfall(
-        #     shap.Explanation(
-        #         values=sample_shap,
-        #         base_values=base_value,
-        #         data=inp.iloc[0],
-        #         feature_names=inp.columns
-        #     ),
-        #     show=False
-        # )
+        start = time.time()
+        shap.plots.waterfall(
+            shap.Explanation(
+                values=sample_shap,
+                base_values=base_value,
+                data=inp.iloc[0],
+                feature_names=inp.columns
+            ),
+            show=False
+        )
 
-        # waterfall_plot = plot_to_base64()
-        # print(f"Waterfall: {time.time()-start:.2f} sec")
-        # print("WATERFALL DONE", flush=True)
+        waterfall_plot = plot_to_base64()
+        print(f"Waterfall: {time.time()-start:.2f} sec")
+        print("WATERFALL DONE", flush=True)
 
         # ===============================
         # FEATURE IMPORTANCE
         # ===============================
-        # start = time.time()
-        # shap.plots.bar(
-        #     shap.Explanation(
-        #         values=sample_shap,
-        #         feature_names=inp.columns
-        #     ),
-        #     show=False
-        # )
+        start = time.time()
+        shap.plots.bar(
+            shap.Explanation(
+                values=sample_shap,
+                feature_names=inp.columns
+            ),
+            show=False
+        )
 
-        # bar_plot = plot_to_base64()
-        # print(f"Bar: {time.time()-start:.2f} sec")
-        # print("BAR DONE", flush=True)
+        bar_plot = plot_to_base64()
+        print(f"Bar: {time.time()-start:.2f} sec")
+        print("BAR DONE", flush=True)
 
         # ===============================
         # SCATTER PLOT
         # ===============================
-        # start = time.time()
-        # plt.figure()
+        start = time.time()
+        plt.figure()
 
-        # if recommended == "rice":
+        if recommended == "rice":
 
-        #     y = df["rice_yield"]
+            y = df["rice_yield"]
 
-        # elif recommended == "wheat":
+        elif recommended == "wheat":
 
-        #     y = df["wheat_yield"]
+            y = df["wheat_yield"]
 
-        # else:
+        else:
 
-        #     y = df["maize_yield"]
+            y = df["maize_yield"]
 
-        # sns.scatterplot(
-        #     x=df["seasonal_rainfall"],
-        #     y=y
-        # )
+        sns.scatterplot(
+            x=df["seasonal_rainfall"],
+            y=y
+        )
 
-        # plt.title(
-        #     "Rainfall vs Yield Relationship"
-        # )
+        plt.title(
+            "Rainfall vs Yield Relationship"
+        )
 
-        # plt.xlabel("Seasonal Rainfall")
+        plt.xlabel("Seasonal Rainfall")
 
-        # plt.ylabel("Yield")
+        plt.ylabel("Yield")
 
-        # scatter_plot = plot_to_base64()
-        # print(f"Scatter: {time.time()-start:.2f} sec")
-        # print("SCATTER DONE", flush=True)
+        scatter_plot = plot_to_base64()
+        print(f"Scatter: {time.time()-start:.2f} sec")
+        print("SCATTER DONE", flush=True)
 
         # ===============================
         # YIELD COMPARISON
         # ===============================
         
-        # rice_pred = prediction["rice"]
-        # wheat_pred = prediction["wheat"]
-        # maize_pred = prediction["maize"]
-        # start = time.time()
-        # plt.figure()
+        rice_pred = prediction["rice"]
+        wheat_pred = prediction["wheat"]
+        maize_pred = prediction["maize"]
+        start = time.time()
+        plt.figure()
 
-        # plt.bar(
-        #     ["Rice", "Wheat", "Maize"],
-        #     [rice_pred, wheat_pred, maize_pred]
-        # )
+        plt.bar(
+            ["Rice", "Wheat", "Maize"],
+            [rice_pred, wheat_pred, maize_pred]
+        )
 
-        # plt.title(
-        #     "Predicted Yield Comparison"
-        # )
+        plt.title(
+            "Predicted Yield Comparison"
+        )
 
-        # plt.ylabel("Yield")
+        plt.ylabel("Yield")
 
-        # comparison_plot = plot_to_base64()
-        # print(f"Comparison: {time.time()-start:.2f} sec")
-        # print("COMPARISON DONE", flush=True)
+        comparison_plot = plot_to_base64()
+        print(f"Comparison: {time.time()-start:.2f} sec")
+        print("COMPARISON DONE", flush=True)
 
         # ===============================
         # CORRELATION HEATMAP
         # ===============================
-        # start = time.time()
-        # plt.figure(figsize=(6, 4))
+        start = time.time()
+        plt.figure(figsize=(6, 4))
 
-        # available_features = []
+        available_features = []
 
-        # possible_features = [
-        #     "season",
-        #     "temperature",
-        #     "soil_type",
-        #     "ph",
-        #     "pH",
-        #     "seasonal_rainfall"
-        # ]
+        possible_features = [
+            "season",
+            "temperature",
+            "soil_type",
+            "ph",
+            "pH",
+            "seasonal_rainfall"
+        ]
 
-        # for col in possible_features:
+        for col in possible_features:
 
-        #     if col in df.columns:
+            if col in df.columns:
 
-        #         available_features.append(col)
+                available_features.append(col)
 
-        # corr_df = df[available_features].copy()
+        corr_df = df[available_features].copy()
 
-        # # encode non numeric columns
-        # for col in corr_df.columns:
+        # encode non numeric columns
+        for col in corr_df.columns:
 
-        #     if corr_df[col].dtype == "object":
+            if corr_df[col].dtype == "object":
 
-        #         corr_df[col] = pd.factorize(
-        #             corr_df[col]
-        #         )[0]
+                corr_df[col] = pd.factorize(
+                    corr_df[col]
+                )[0]
 
-        # sns.heatmap(
-        #     corr_df.corr(),
-        #     annot=False,
-        #     cmap="coolwarm"
-        # )
+        sns.heatmap(
+            corr_df.corr(),
+            annot=False,
+            cmap="coolwarm"
+        )
 
-        # plt.title(
-        #     "Agronomic Feature Correlation"
-        # )
+        plt.title(
+            "Agronomic Feature Correlation"
+        )
 
-        # heatmap_plot = plot_to_base64()
-        # print(f"Heatmap: {time.time()-start:.2f} sec")
-        # print("HEATMAP DONE", flush=True)
+        heatmap_plot = plot_to_base64()
+        print(f"Heatmap: {time.time()-start:.2f} sec")
+        print("HEATMAP DONE", flush=True)
 
         # ===============================
         # AI EXPLANATION TEXT
@@ -966,42 +966,42 @@ Soil pH: {soil_ph}
     "input_summary": input_summary,
     "prediction_summary": prediction_summary,
 
-    # "force_plot": force_plot,
-    # "force_interpretation": force_interpretation,
+    "force_plot": force_plot,
+    "force_interpretation": force_interpretation,
 
-    # "waterfall_plot": waterfall_plot,
-    # "waterfall_interpretation": waterfall_interpretation,
+    "waterfall_plot": waterfall_plot,
+    "waterfall_interpretation": waterfall_interpretation,
 
-    # "bar_plot": bar_plot,
-    # "bar_interpretation": bar_interpretation,
+    "bar_plot": bar_plot,
+    "bar_interpretation": bar_interpretation,
 
-    # "scatter_plot": scatter_plot,
-    # "scatter_interpretation": scatter_interpretation,
+    "scatter_plot": scatter_plot,
+    "scatter_interpretation": scatter_interpretation,
 
-    # "comparison_plot": comparison_plot,
-    # "comparison_interpretation": comparison_interpretation,
+    "comparison_plot": comparison_plot,
+    "comparison_interpretation": comparison_interpretation,
 
-    # "heatmap_plot": heatmap_plot,
-    # "heatmap_interpretation": heatmap_interpretation,
-    "force_plot": None,
-"force_interpretation": None,
+    "heatmap_plot": heatmap_plot,
+    "heatmap_interpretation": heatmap_interpretation,
+#     "force_plot": None,
+# "force_interpretation": None,
 
-"waterfall_plot": None,
-"waterfall_interpretation": None,
+# "waterfall_plot": None,
+# "waterfall_interpretation": None,
 
-"bar_plot": None,
-"bar_interpretation": None,
+# "bar_plot": None,
+# "bar_interpretation": None,
 
-"scatter_plot": None,
-"scatter_interpretation": None,
+# "scatter_plot": None,
+# "scatter_interpretation": None,
 
-"comparison_plot": None,
-"comparison_interpretation": None,
+# "comparison_plot": None,
+# "comparison_interpretation": None,
 
-"heatmap_plot": None,
-"heatmap_interpretation": None,
-    "counterfactual_plot": counterfactual["plot"],
-    "counterfactual_interpretation": counterfactual["interpretation"],
+# "heatmap_plot": None,
+# "heatmap_interpretation": None,
+#     "counterfactual_plot": counterfactual["plot"],
+#     "counterfactual_interpretation": counterfactual["interpretation"],
 
     "final_recommendation": final_recommendation,
 
