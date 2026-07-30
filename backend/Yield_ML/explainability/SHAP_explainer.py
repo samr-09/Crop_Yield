@@ -510,6 +510,23 @@ def generate_counterfactual(inp, recommended):
                     best_prediction = pred
                     best_input = candidate
 
+                    print("="*50)
+    print("Current")
+
+    print(temp0, rain0, ph0)
+
+    print("Suggested")
+
+    print(best_input[[
+    "temperature",
+    "seasonal_rainfall",
+    "ph"
+]])
+
+    print("Current Yield :", current_prediction)
+    print("Best Yield    :", best_prediction)
+    print("="*50)
+
     plt.figure(figsize=(6,4))
 
     labels = ["Temperature", "Soil pH", "Rainfall"]
