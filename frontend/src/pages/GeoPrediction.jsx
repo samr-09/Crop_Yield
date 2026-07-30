@@ -1286,17 +1286,21 @@ const renderCounterfactualSummary = (text) => {
 
         <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6 shadow-sm">
 
-            <h3 className="text-xl font-semibold text-gray-700 mb-5">
-                Feature Comparison
-            </h3>
+    <h3 className="text-xl font-semibold text-gray-700 mb-5 text-center">
+        Feature Comparison
+    </h3>
 
-            <img
-                src={`data:image/png;base64,${prediction.counterfactual_plot}`}
-                alt="Counterfactual Plot"
-                className="w-full rounded-xl border shadow-sm"
-            />
+    <div className="flex justify-center">
 
-        </div>
+        <img
+            src={`data:image/png;base64,${prediction.counterfactual_plot}`}
+            alt="Counterfactual Plot"
+            className="w-full max-w-xl rounded-xl border shadow-sm"
+        />
+
+    </div>
+
+</div>
 
         {/* Summary */}
 
