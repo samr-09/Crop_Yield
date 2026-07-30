@@ -245,69 +245,120 @@ function GeoPrediction() {
     }
     const downloadReport = async () => {
 
-        const upper = document.querySelector(".grid.grid-cols-12");
-        const lower = document.getElementById("prediction-report");
+    const upper = document.querySelector(".grid.grid-cols-12");
+    const lower = document.getElementById("prediction-report");
 
-        const button = document.getElementById("ignore-pdf");
+    const button = document.getElementById("ignore-pdf");
 
-        if (button) button.style.display = "none";
+    if (button) button.style.display = "none";
 
-        if (!upper || !lower) return;
+    const pdf = new jsPDF("p", "mm", "a4");
 
-        const canvas1 = await html2canvas(upper, {
-            scale: 2,
-            useCORS: true,
-            scrollY: -window.scrollY
-        });
+    const pdfWidth = 210;
+    const pdfHeight = 297;
 
-        const canvas2 = await html2canvas(lower, {
-            scale: 2,
-            useCORS: true,
-            scrollY: -window.scrollY
-        });
+    // ---------------- PAGE 1 ----------------
 
-        const imgData1 = canvas1.toDataURL("image/png");
-        const imgData2 = canvas2.toDataURL("image/png");
+    const canvas1 = await html2canvas(upper, {
+        scale: 2,
+        useCORS: true,
+        scrollY: -window.scrollY
+    });
 
-        const pdf = new jsPDF("p", "mm", "a4");
+    const img1 = canvas1.toDataURL("image/png");
 
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pdfWidth;
+    const imgHeight =
+        (canvas1.height * imgWidth) / canvas1.width;
 
-        const imgWidth = pdfWidth;
+    pdf.addImage(
+        img1,
+        "PNG",
+        0,
+        0,
+        imgWidth,
+        imgHeight
+    );
 
-        const imgHeight1 =
-            (canvas1.height * imgWidth) / canvas1.width;
+    // ---------------- PAGE 2+ ----------------
 
-        pdf.addImage(
-            imgData1,
-            "PNG",
-            0,
-            0,
-            imgWidth,
-            imgHeight1
+    const canvas2 = await html2canvas(lower, {
+        scale: 2,
+        useCORS: true,
+        scrollY: -window.scrollY
+    });
+
+    const pageCanvas = document.createElement("canvas");
+
+    const ctx = pageCanvas.getContext("2d");
+
+    const pageHeightPx =
+        Math.floor(
+            canvas2.width *
+            pdfHeight /
+            pdfWidth
         );
+
+    let renderedHeight = 0;
+
+    while (renderedHeight < canvas2.height) {
+
+        pageCanvas.width = canvas2.width;
+
+        pageCanvas.height = Math.min(
+            pageHeightPx,
+            canvas2.height - renderedHeight
+        );
+
+        ctx.clearRect(
+            0,
+            0,
+            pageCanvas.width,
+            pageCanvas.height
+        );
+
+        ctx.drawImage(
+
+            canvas2,
+
+            0,
+            renderedHeight,
+            canvas2.width,
+            pageCanvas.height,
+
+            0,
+            0,
+            canvas2.width,
+            pageCanvas.height
+        );
+
         pdf.addPage();
 
-        const imgHeight2 =
-            (canvas2.height * imgWidth) / canvas2.width;
+        const pageImg = pageCanvas.toDataURL("image/png");
+
+        const pageImgHeight =
+            pageCanvas.height *
+            pdfWidth /
+            pageCanvas.width;
 
         pdf.addImage(
-            imgData2,
+            pageImg,
             "PNG",
             0,
             0,
-            imgWidth,
-            imgHeight2
+            pdfWidth,
+            pageImgHeight
         );
 
+        renderedHeight += pageHeightPx;
+    }
 
+    
 
-        pdf.save(`Prediction_Report_${district}_${year}.pdf`);
-        if (button) {
-            button.style.display = "flex";
-        }
-    };
+    pdf.save(`Prediction_Report_${district}_${year}.pdf`);
+
+    if (button) button.style.display = "flex";
+};
     /* ---------------- NEW PARTITION FUNCTION ---------------- */
     function generateVoronoiZones() {
 
