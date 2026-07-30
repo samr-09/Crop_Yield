@@ -621,7 +621,6 @@ def generate_counterfactual(inp, recommended):
     interpretation = f"""
     Recommended Adjustments
     ────────────────────────
-
     🌡 Temperature
     {temp0:.2f}°C → {after[0]:.2f}°C
 
@@ -630,9 +629,7 @@ def generate_counterfactual(inp, recommended):
 
     🌧 Seasonal Rainfall
     {rain0:.2f} mm → {after[2]:.2f} mm
-
     ────────────────────────
-
     Predicted Yield
 
     Current
@@ -642,9 +639,7 @@ def generate_counterfactual(inp, recommended):
     {best_prediction:.4f} t/ha
 
     ▲ +{improvement:.2f}%
-
     ────────────────────────────────
-
     Model Insight
 
     The recommended values represent the most favorable environmental conditions identified by the ensemble model within the explored search space, balancing yield improvement with minimal deviation from the original input conditions.
