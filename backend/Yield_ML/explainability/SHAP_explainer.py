@@ -1,6 +1,10 @@
 print("########################")
 print("NEW SHAP VERSION RUNNING")
 print("########################")
+from turtle import distance
+
+from turtle import distance
+
 import matplotlib
 
 
@@ -467,14 +471,15 @@ def generate_counterfactual(inp, recommended):
 
     best_prediction = current_prediction
     best_input = current.copy()
+    best_score = current_prediction
 
     temp0 = float(current.iloc[0]["temperature"])
     rain0 = float(current.iloc[0]["seasonal_rainfall"])
     ph0 = float(current.iloc[0]["ph"])
 
-    temperatures = [temp0 - 1, temp0, temp0 + 1]
-    rainfalls = [max(0, rain0 - 20), rain0, rain0 + 20]
-    ph_values = [max(4.5, ph0 - 0.2), ph0, min(8.5, ph0 + 0.2)]
+    temperatures = np.arange(temp0 - 2.0, temp0 + 2.01, 0.5)
+    rainfalls   = np.arange(max(0, rain0 - 50), rain0 + 50.1, 10)
+    ph_values   = np.arange(max(4.5, ph0 - 0.5), min(8.5, ph0 + 0.51), 0.1)
 
     for t in temperatures:
 
@@ -490,8 +495,21 @@ def generate_counterfactual(inp, recommended):
 
                 pred = float(model.predict(candidate)[0])
 
-                if pred > best_prediction:
+                temp_change = abs(t - temp0)
+                rain_change = abs(r - rain0)
+                ph_change = abs(p - ph0)
 
+                distance = (
+                    temp_change / 2 +
+                    rain_change / 50 +
+                    ph_change / 0.5
+            )
+
+                score = pred - (0.05 * distance)
+
+                if score > best_score:
+
+                    best_score = score
                     best_prediction = pred
                     best_input = candidate
 
