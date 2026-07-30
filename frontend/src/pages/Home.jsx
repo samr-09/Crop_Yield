@@ -55,12 +55,10 @@ const Home = () => {
           <button onClick={() => navigate('/home')} className="px-4 py-2 text-sm font-medium text-white bg-white/10 rounded-lg transition-colors">
             Dashboard
           </button>
-          <button onClick={() => navigate('/predict')} className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+          <button onClick={() => navigate('/geo')} className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
             Predict Yield
           </button>
-          <button onClick={() => navigate('/recommendation')} className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-            Recommendation
-          </button>
+          
         </div>
 
         <div className="flex items-center gap-4">
