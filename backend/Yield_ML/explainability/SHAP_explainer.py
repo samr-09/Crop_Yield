@@ -542,7 +542,9 @@ Seasonal Rainfall:
 Predicted Yield:
 {current_prediction:.4f} → {best_prediction:.4f} ton/hectare
 """
-
+    print("=== COUNTERFACTUAL GENERATED ===")
+    print(best_prediction)
+    print(plot is not None)
     return {
         "plot": plot,
         "interpretation": interpretation
@@ -660,6 +662,7 @@ def explain_prediction(data, recommended, prediction):
             inp.copy(),
             recommended
         )
+        print(counterfactual)
         
         # ===============================
         # FORCE PLOT
