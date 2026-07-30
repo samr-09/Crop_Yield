@@ -471,13 +471,13 @@ def generate_counterfactual(inp, recommended):
     rain0 = float(current.iloc[0]["seasonal_rainfall"])
     ph0 = float(current.iloc[0]["ph"])
 
-    temperatures = np.arange(temp0 - 2, temp0 + 2.1, 0.5)
-    rainfalls = np.arange(max(0, rain0 - 50), rain0 + 51, 10)
+    temperatures = np.arange(temp0 - 2, temp0 + 2.1, 1)
+    rainfalls = np.arange(max(0, rain0 - 40), rain0 + 41, 20)
     ph_values = np.arange(
-        max(4.5, ph0 - 0.5),
-        min(8.5, ph0 + 0.51),
-        0.1
-    )
+    max(4.5, ph0 - 0.4),
+    min(8.5, ph0 + 0.41),
+    0.2
+)
 
     for t in temperatures:
 
@@ -496,7 +496,7 @@ def generate_counterfactual(inp, recommended):
                 if pred > best_prediction:
 
                     best_prediction = pred
-                    best_input = candidate.copy()
+                    best_input = candidate()
 
     plt.figure(figsize=(6,4))
 
