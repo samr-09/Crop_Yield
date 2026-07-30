@@ -1121,22 +1121,85 @@ function GeoPrediction() {
                         </div>
                         {/* Counterfactual Analysis */}
 
-{prediction.counterfactual_plot && (
-  <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-    <h2 className="text-xl font-semibold text-green-700 mb-4">
-      Counterfactual Analysis
-    </h2>
+{/* ================= COUNTERFACTUAL ANALYSIS ================= */}
 
-    <img
-      src={`data:image/png;base64,${prediction.counterfactual_plot}`}
-      alt="Counterfactual Plot"
-      className="w-full rounded-lg mb-4"
-    />
+{prediction?.counterfactual_plot && (
 
-    <p className="text-gray-700 whitespace-pre-line">
-      {prediction.counterfactual_interpretation}
-    </p>
-  </div>
+    <div className="mt-10 bg-white rounded-3xl shadow-2xl border border-green-200 overflow-hidden">
+
+        {/* Header */}
+
+        <div className="bg-gradient-to-r from-green-600 to-emerald-500 px-8 py-6 flex items-center justify-between">
+
+            <div>
+
+                <h2 className="text-3xl font-bold text-white">
+                    Counterfactual Recommendation
+                </h2>
+
+                <p className="text-green-100 mt-2 text-sm">
+                    Alternative environmental conditions identified by the ensemble model
+                    to maximize the predicted crop yield.
+                </p>
+
+            </div>
+
+            <div className="bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-semibold">
+                Ensemble AI
+            </div>
+
+        </div>
+
+        <div className="p-8">
+
+            {/* Graph */}
+
+            <div className="bg-gray-50 rounded-2xl border p-5 shadow-sm">
+
+                <div className="flex items-center justify-between mb-5">
+
+                    <h3 className="text-xl font-semibold text-gray-700">
+                        Feature Comparison
+                    </h3>
+
+                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
+                        AI Generated
+                    </span>
+
+                </div>
+
+                <img
+                    src={`data:image/png;base64,${prediction.counterfactual_plot}`}
+                    alt="Counterfactual Plot"
+                    className="w-full rounded-xl shadow-md border"
+                />
+
+            </div>
+
+            {/* Interpretation */}
+
+            <div className="mt-8">
+
+                <div className="bg-gradient-to-br from-green-50 to-white border-l-4 border-green-600 rounded-2xl p-6 shadow-sm">
+
+                    <h3 className="text-xl font-bold text-green-700 mb-5">
+                        Model Interpretation
+                    </h3>
+
+                    <div className="whitespace-pre-line text-gray-700 leading-8 text-[15px]">
+
+                        {prediction.counterfactual_interpretation}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 )}
                         {/* FINAL RECOMMENDATION */}
 

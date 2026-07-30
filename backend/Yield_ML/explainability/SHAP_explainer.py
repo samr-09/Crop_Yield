@@ -573,50 +573,88 @@ def generate_counterfactual(inp, recommended):
     print("Best Yield    :", best_prediction)
     print("=" * 50)
 
-    plt.figure(figsize=(6, 4))
+    plt.figure(figsize=(8, 4.8))
 
     labels = ["Temperature", "Soil pH", "Rainfall"]
 
-    before = [
-        temp0,
-        ph0,
-        rain0
-    ]
+    before = np.array([
+    temp0,
+    ph0,
+    rain0
+])
 
-    after = [
-        float(best_input.iloc[0]["temperature"]),
-        float(best_input.iloc[0]["ph"]),
-        float(best_input.iloc[0]["seasonal_rainfall"])
-    ]
+    after = np.array([
+    float(best_input.iloc[0]["temperature"]),
+    float(best_input.iloc[0]["ph"]),
+    float(best_input.iloc[0]["seasonal_rainfall"])
+])
 
-    x = np.arange(len(labels))
-    width = 0.35
+# Normalize with respect to current values
+    before_norm = np.ones_like(before)
+    after_norm = after / before
 
-    plt.bar(x - width / 2, before, width, label="Current")
-    plt.bar(x + width / 2, after, width, label="Suggested")
+    y = np.arange(len(labels))
+    height = 0.34
 
-    plt.xticks(x, labels)
-    plt.ylabel("Value")
+    plt.barh(y + height/2, before_norm, height, label="Observed")
+    plt.barh(y - height/2, after_norm, height, label="Counterfactual")
+
+    plt.yticks(y, labels)
+
+    plt.xlabel("Relative Value (Current = 1.0)")
     plt.title("Counterfactual Feature Comparison")
-    plt.legend()
+
+    plt.xlim(0.8, 1.2)
+
+    plt.grid(axis="x", linestyle="--", alpha=0.4)
+
+    plt.legend(loc="lower right")
+
+    plt.tight_layout()
 
     plot = plot_to_base64()
+    improvement = (
+        (best_prediction - current_prediction)
+        / current_prediction
+    ) * 100
 
     interpretation = f"""
-Counterfactual analysis indicates that the predicted yield could be improved by adjusting a few controllable environmental factors.
+    Counterfactual Recommendation
 
-Temperature:
-{temp0:.2f} °C → {after[0]:.2f} °C
+    The ensemble model identifies a nearby environmental configuration that is expected to improve crop productivity while remaining close to the original cultivation conditions.
 
-Soil pH:
-{ph0:.2f} → {after[1]:.2f}
+    ────────────────────────────────
 
-Seasonal Rainfall:
-{rain0:.2f} mm → {after[2]:.2f} mm
+    Recommended Environmental Adjustments
 
-Predicted Yield:
-{current_prediction:.4f} → {best_prediction:.4f} ton/hectare
-"""
+    Temperature
+    {temp0:.2f} °C → {after[0]:.2f} °C
+
+    Soil pH
+    {ph0:.2f} → {after[1]:.2f}
+
+    Seasonal Rainfall
+    {rain0:.2f} mm → {after[2]:.2f} mm
+
+    ────────────────────────────────
+
+    Predicted Yield
+
+    Current Yield
+    {current_prediction:.4f} ton/hectare
+
+    Optimized Yield
+    {best_prediction:.4f} ton/hectare
+
+    Expected Improvement
+    +{improvement:.2f}%
+
+    ────────────────────────────────
+
+    Model Insight
+
+    The recommended values represent the most favorable environmental conditions identified by the ensemble model within the explored search space, balancing yield improvement with minimal deviation from the original input conditions.
+    """
 
     print("=== COUNTERFACTUAL GENERATED ===")
     print(best_prediction)
