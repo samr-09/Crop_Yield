@@ -67,8 +67,8 @@ def predict():
     "heatmap_plot": explanation["heatmap_plot"],
     "heatmap_interpretation": explanation["heatmap_interpretation"],
 
-    "counterfactual_plot": explanation["counterfactual_plot"],
-    "counterfactual_interpretation": explanation["counterfactual_interpretation"],
+    # "counterfactual_plot": explanation["counterfactual_plot"],
+    # "counterfactual_interpretation": explanation["counterfactual_interpretation"],
 
     "final_recommendation": explanation["final_recommendation"],
 
