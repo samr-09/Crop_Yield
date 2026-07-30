@@ -186,7 +186,7 @@ const Landing = () => {
               className="flex flex-col sm:flex-row gap-4 mt-10"
             >
               <button
-                onClick={() => navigate("/recommendation")}
+                onClick={() => navigate("/login")}
                 className="px-8 py-4 rounded-2xl bg-green-600 hover:bg-green-500 font-semibold flex items-center justify-center gap-2"
               >
                 Try AI Recommendation
@@ -613,19 +613,14 @@ const Landing = () => {
               <div className="flex flex-col sm:flex-row justify-center gap-5">
 
                 <button
-                  onClick={() => navigate("/recommendation")}
+                  onClick={() => navigate("/login")}
                   className="px-8 py-4 rounded-2xl bg-green-600 hover:bg-green-500 font-semibold flex items-center justify-center gap-2"
                 >
                   Start Recommendation
                   <ArrowRight size={18} />
                 </button>
 
-                <button
-                  onClick={() => navigate("/predict")}
-                  className="px-8 py-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10"
-                >
-                  Predict Yield
-                </button>
+                
 
               </div>
 
