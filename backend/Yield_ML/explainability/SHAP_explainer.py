@@ -823,6 +823,7 @@ def explain_prediction(data, recommended, prediction):
         # ===============================
         # SCATTER PLOT
         # ===============================
+        print("START SCATTER", flush=True)
         start = time.time()
         plt.figure()
 
