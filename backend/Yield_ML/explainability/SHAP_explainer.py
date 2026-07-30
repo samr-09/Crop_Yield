@@ -550,10 +550,17 @@ def generate_counterfactual(inp, recommended):
 
         dice = get_dice_explainer(recommended)
 
+        current_prediction = float(
+            get_model(recommended).predict(inp)[0]
+        )
+
         cf = dice.generate_counterfactuals(
             inp,
             total_CFs=1,
-            desired_range=None,
+            desired_range=[
+                current_prediction * 1.05,
+                current_prediction * 1.50
+            ],
             features_to_vary=[
                 "temperature",
                 "ph",
