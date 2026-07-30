@@ -1295,7 +1295,7 @@ const renderCounterfactualSummary = (text) => {
         <img
             src={`data:image/png;base64,${prediction.counterfactual_plot}`}
             alt="Counterfactual Plot"
-            className="w-full max-w-xl rounded-xl border shadow-sm"
+            className="w-full h-auto rounded-xl border shadow-sm"
         />
 
     </div>

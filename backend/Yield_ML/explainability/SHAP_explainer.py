@@ -573,7 +573,7 @@ def generate_counterfactual(inp, recommended):
     print("Best Yield    :", best_prediction)
     print("=" * 50)
 
-    plt.figure(figsize=(8, 4.8))
+    plt.figure(figsize=(6.5, 4), dpi=120)
 
     labels = ["Temperature", "Soil pH", "Rainfall"]
 
