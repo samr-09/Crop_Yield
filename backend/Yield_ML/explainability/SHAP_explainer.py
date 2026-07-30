@@ -496,7 +496,7 @@ def generate_counterfactual(inp, recommended):
                 if pred > best_prediction:
 
                     best_prediction = pred
-                    best_input = candidate()
+                    best_input = candidate
 
     plt.figure(figsize=(6,4))
 
