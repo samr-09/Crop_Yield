@@ -500,27 +500,22 @@ def generate_counterfactual(inp, recommended):
 
     current = inp.copy()
 
-    current_prediction = ensemble_predict(
-        current,
-        recommended
-    )
-
-    best_prediction = current_prediction
-    best_input = current.copy()
-    best_score = current_prediction
+    rf_model = get_rf_model(recommended)
+    xgb_model = get_xgb_model(recommended)
 
     temp0 = float(current.iloc[0]["temperature"])
     rain0 = float(current.iloc[0]["seasonal_rainfall"])
     ph0 = float(current.iloc[0]["ph"])
 
     temperatures = np.arange(temp0 - 2.0, temp0 + 2.01, 0.5)
-    rainfalls   = np.arange(max(0, rain0 - 50), rain0 + 50.1, 10)
-    ph_values   = np.arange(max(4.5, ph0 - 0.5), min(8.5, ph0 + 0.51), 0.1)
+    rainfalls = np.arange(max(0, rain0 - 50), rain0 + 50.1, 10)
+    ph_values = np.arange(max(4.5, ph0 - 0.5), min(8.5, ph0 + 0.51), 0.1)
+
+    # Generate all candidates
+    candidates = []
 
     for t in temperatures:
-
         for r in rainfalls:
-
             for p in ph_values:
 
                 candidate = current.copy()
@@ -529,44 +524,56 @@ def generate_counterfactual(inp, recommended):
                 candidate.loc[:, "seasonal_rainfall"] = r
                 candidate.loc[:, "ph"] = p
 
-                pred = ensemble_predict(candidate, recommended)
+                candidates.append(candidate)
 
-                temp_change = abs(t - temp0)
-                rain_change = abs(r - rain0)
-                ph_change = abs(p - ph0)
+    all_candidates = pd.concat(candidates, ignore_index=True)
 
-                distance = (
-                    temp_change / 2 +
-                    rain_change / 50 +
-                    ph_change / 0.5
-            )
+    # Ensemble prediction (ONLY TWO predict() CALLS)
+    rf_preds = rf_model.predict(all_candidates)
+    xgb_preds = xgb_model.predict(all_candidates)
 
-                score = pred - (0.05 * distance)
+    preds = (rf_preds + xgb_preds) / 2
 
-                if score > best_score:
+    # Current prediction
+    current_prediction = (
+    float(rf_model.predict(current)[0]) +
+    float(xgb_model.predict(current)[0])
+) / 2
 
-                    best_score = score
-                    best_prediction = pred
-                    best_input = candidate
+    # Distance penalty
+    temp_change = np.abs(all_candidates["temperature"].values - temp0)
+    rain_change = np.abs(all_candidates["seasonal_rainfall"].values - rain0)
+    ph_change = np.abs(all_candidates["ph"].values - ph0)
 
-    print("="*50)
+    distance = (
+        temp_change / 2 +
+        rain_change / 50 +
+        ph_change / 0.5
+    )
+
+    scores = preds - (0.05 * distance)
+
+    best_idx = np.argmax(scores)
+
+    best_prediction = float(preds[best_idx])
+    best_input = all_candidates.iloc[[best_idx]].copy()
+
+    print("=" * 50)
     print("Current")
-
     print(temp0, rain0, ph0)
 
     print("Suggested")
-
     print(best_input[[
-    "temperature",
-    "seasonal_rainfall",
-    "ph"
-]])
+        "temperature",
+        "seasonal_rainfall",
+        "ph"
+    ]])
 
     print("Current Yield :", current_prediction)
     print("Best Yield    :", best_prediction)
-    print("="*50)
+    print("=" * 50)
 
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(6, 4))
 
     labels = ["Temperature", "Soil pH", "Rainfall"]
 
@@ -585,8 +592,8 @@ def generate_counterfactual(inp, recommended):
     x = np.arange(len(labels))
     width = 0.35
 
-    plt.bar(x - width/2, before, width, label="Current")
-    plt.bar(x + width/2, after, width, label="Suggested")
+    plt.bar(x - width / 2, before, width, label="Current")
+    plt.bar(x + width / 2, after, width, label="Suggested")
 
     plt.xticks(x, labels)
     plt.ylabel("Value")
@@ -610,9 +617,11 @@ Seasonal Rainfall:
 Predicted Yield:
 {current_prediction:.4f} → {best_prediction:.4f} ton/hectare
 """
+
     print("=== COUNTERFACTUAL GENERATED ===")
     print(best_prediction)
     print(plot is not None)
+
     return {
         "plot": plot,
         "interpretation": interpretation
