@@ -619,35 +619,29 @@ def generate_counterfactual(inp, recommended):
     ) * 100
 
     interpretation = f"""
-    Counterfactual Recommendation
+    Recommended Adjustments
+    ────────────────────────
 
-    The ensemble model identifies a nearby environmental configuration that is expected to improve crop productivity while remaining close to the original cultivation conditions.
+    🌡 Temperature
+    {temp0:.2f}°C → {after[0]:.2f}°C
 
-    ────────────────────────────────
-
-    Recommended Environmental Adjustments
-
-    Temperature
-    {temp0:.2f} °C → {after[0]:.2f} °C
-
-    Soil pH
+    🧪 Soil pH
     {ph0:.2f} → {after[1]:.2f}
 
-    Seasonal Rainfall
+    🌧 Seasonal Rainfall
     {rain0:.2f} mm → {after[2]:.2f} mm
 
-    ────────────────────────────────
+    ────────────────────────
 
     Predicted Yield
 
-    Current Yield
-    {current_prediction:.4f} ton/hectare
+    Current
+    {current_prediction:.4f} t/ha
 
-    Optimized Yield
-    {best_prediction:.4f} ton/hectare
+    Optimized
+    {best_prediction:.4f} t/ha
 
-    Expected Improvement
-    +{improvement:.2f}%
+    ▲ +{improvement:.2f}%
 
     ────────────────────────────────
 

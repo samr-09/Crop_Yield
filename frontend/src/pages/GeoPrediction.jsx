@@ -449,7 +449,148 @@ function GeoPrediction() {
 
     }
 
+const renderCounterfactualSummary = (text) => {
 
+    if (!text) return null;
+
+    const lines = text
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean)
+        .filter(line => !line.includes("────"));
+
+    const adjustments = [];
+    let currentYield = "";
+    let optimizedYield = "";
+    let improvement = "";
+
+    for (let i = 0; i < lines.length; i++) {
+
+        if (
+            lines[i].includes("Temperature") ||
+            lines[i].includes("Soil pH") ||
+            lines[i].includes("Rainfall")
+        ) {
+
+            adjustments.push({
+                title: lines[i],
+                value: lines[i + 1] || ""
+            });
+
+        }
+
+        if (lines[i] === "Current") {
+
+            currentYield = lines[i + 1];
+
+        }
+
+        if (lines[i] === "Optimized") {
+
+            optimizedYield = lines[i + 1];
+
+        }
+
+        if (lines[i].startsWith("▲")) {
+
+            improvement = lines[i];
+
+        }
+
+    }
+
+    return (
+
+        <div className="space-y-8">
+
+            {/* Recommended Adjustments */}
+
+            <div>
+
+                <h3 className="text-xl font-bold text-green-700 mb-5">
+                    Recommended Adjustments
+                </h3>
+
+                <div className="grid md:grid-cols-3 gap-5">
+
+                    {adjustments.map((item, index) => (
+
+                        <div
+                            key={index}
+                            className="bg-white rounded-2xl border border-green-200 shadow-sm p-5 text-center"
+                        >
+
+                            <h4 className="font-semibold text-gray-700 mb-3">
+                                {item.title}
+                            </h4>
+
+                            <p className="text-lg font-bold text-green-700">
+                                {item.value}
+                            </p>
+
+                        </div>
+
+                    ))}
+
+                </div>
+
+            </div>
+
+            {/* Yield Card */}
+
+            <div>
+
+                <h3 className="text-xl font-bold text-green-700 mb-5">
+                    Predicted Yield
+                </h3>
+
+                <div className="bg-white rounded-2xl border border-green-200 shadow-sm p-6">
+
+                    <div className="flex justify-between py-2 border-b">
+
+                        <span className="text-gray-600">
+                            Current
+                        </span>
+
+                        <span className="font-semibold">
+                            {currentYield}
+                        </span>
+
+                    </div>
+
+                    <div className="flex justify-between py-2 border-b">
+
+                        <span className="text-gray-600">
+                            Optimized
+                        </span>
+
+                        <span className="font-semibold">
+                            {optimizedYield}
+                        </span>
+
+                    </div>
+
+                    <div className="flex justify-between items-center pt-4">
+
+                        <span className="font-semibold text-gray-700">
+                            Improvement
+                        </span>
+
+                        <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold">
+                            {improvement}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    );
+
+};
 
     return (
 
@@ -1119,86 +1260,57 @@ function GeoPrediction() {
                             )}
 
                         </div>
-                        {/* Counterfactual Analysis */}
-
-{/* ================= COUNTERFACTUAL ANALYSIS ================= */}
+   {/* ================= COUNTERFACTUAL ANALYSIS ================= */}
 
 {prediction?.counterfactual_plot && (
 
-    <div className="mt-10 bg-white rounded-3xl shadow-2xl border border-green-200 overflow-hidden">
+<div className="mt-10 bg-white rounded-3xl shadow-2xl border border-green-200 overflow-hidden">
 
-        {/* Header */}
+    {/* Header */}
 
-        <div className="bg-gradient-to-r from-green-600 to-emerald-500 px-8 py-6 flex items-center justify-between">
+    <div className="bg-gradient-to-r from-green-600 to-emerald-500 px-8 py-6">
 
-            <div>
+        <h2 className="text-3xl font-bold text-white">
+            Counterfactual Recommendation
+        </h2>
 
-                <h2 className="text-3xl font-bold text-white">
-                    Counterfactual Recommendation
-                </h2>
+        <p className="text-green-100 mt-2 text-sm">
+            Recommended environmental adjustments for improving the predicted crop yield.
+        </p>
 
-                <p className="text-green-100 mt-2 text-sm">
-                    Alternative environmental conditions identified by the ensemble model
-                    to maximize the predicted crop yield.
-                </p>
+    </div>
 
-            </div>
+    <div className="p-8 space-y-8">
 
-            <div className="bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-semibold">
-                Ensemble AI
-            </div>
+        {/* Graph */}
+
+        <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6 shadow-sm">
+
+            <h3 className="text-xl font-semibold text-gray-700 mb-5">
+                Feature Comparison
+            </h3>
+
+            <img
+                src={`data:image/png;base64,${prediction.counterfactual_plot}`}
+                alt="Counterfactual Plot"
+                className="w-full rounded-xl border shadow-sm"
+            />
 
         </div>
 
-        <div className="p-8">
+        {/* Summary */}
 
-            {/* Graph */}
+        <div className="bg-green-50 rounded-2xl border border-green-200 p-6">
 
-            <div className="bg-gray-50 rounded-2xl border p-5 shadow-sm">
-
-                <div className="flex items-center justify-between mb-5">
-
-                    <h3 className="text-xl font-semibold text-gray-700">
-                        Feature Comparison
-                    </h3>
-
-                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-                        AI Generated
-                    </span>
-
-                </div>
-
-                <img
-                    src={`data:image/png;base64,${prediction.counterfactual_plot}`}
-                    alt="Counterfactual Plot"
-                    className="w-full rounded-xl shadow-md border"
-                />
-
-            </div>
-
-            {/* Interpretation */}
-
-            <div className="mt-8">
-
-                <div className="bg-gradient-to-br from-green-50 to-white border-l-4 border-green-600 rounded-2xl p-6 shadow-sm">
-
-                    <h3 className="text-xl font-bold text-green-700 mb-5">
-                        Model Interpretation
-                    </h3>
-
-                    <div className="whitespace-pre-line text-gray-700 leading-8 text-[15px]">
-
-                        {prediction.counterfactual_interpretation}
-
-                    </div>
-
-                </div>
-
-            </div>
+            {renderCounterfactualSummary(
+                prediction.counterfactual_interpretation
+            )}
 
         </div>
 
     </div>
+
+</div>
 
 )}
                         {/* FINAL RECOMMENDATION */}
