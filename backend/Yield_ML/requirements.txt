@@ -9,3 +9,4 @@ joblib==1.5.2
 matplotlib==3.10.6
 seaborn==0.13.2
 gunicorn
+dice-ml==0.12

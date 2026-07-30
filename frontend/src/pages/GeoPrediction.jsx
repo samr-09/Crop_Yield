@@ -1119,6 +1119,25 @@ function GeoPrediction() {
                             )}
 
                         </div>
+                        {/* Counterfactual Analysis */}
+
+{prediction.counterfactual_plot && (
+  <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+    <h2 className="text-xl font-semibold text-green-700 mb-4">
+      Counterfactual Analysis
+    </h2>
+
+    <img
+      src={`data:image/png;base64,${prediction.counterfactual_plot}`}
+      alt="Counterfactual Plot"
+      className="w-full rounded-lg mb-4"
+    />
+
+    <p className="text-gray-700 whitespace-pre-line">
+      {prediction.counterfactual_interpretation}
+    </p>
+  </div>
+)}
                         {/* FINAL RECOMMENDATION */}
 
                         {prediction?.final_recommendation && (
