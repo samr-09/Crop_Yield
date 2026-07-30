@@ -844,10 +844,19 @@ def explain_prediction(data, recommended, prediction):
         #     x=df["seasonal_rainfall"],
         #     y=y
         # )
+        print(type(df["seasonal_rainfall"]))
+        print(type(y))
+        print(df["seasonal_rainfall"].dtype)
+        print(y.dtype)
+        print(df["seasonal_rainfall"].head())
+        print(y.head())
+        x = df["seasonal_rainfall"].to_numpy(dtype=float)
+        yy = y.to_numpy(dtype=float)
+
         plt.scatter(
-        df["seasonal_rainfall"],
-        y,
-        s=5
+            x,
+            yy,
+            s=5
         )
         print("SCATTER PLOTTED", flush=True)
         plt.title(
