@@ -549,7 +549,7 @@ def generate_counterfactual(inp, recommended):
                     best_prediction = pred
                     best_input = candidate
 
-                print("="*50)
+    print("="*50)
     print("Current")
 
     print(temp0, rain0, ph0)
