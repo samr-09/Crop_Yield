@@ -64,22 +64,22 @@ def load_models():
                 "maize": joblib.load(
                     os.path.join(MODEL_DIR, "xgb_maize.pkl")
                 )
-            },
-
-            "rf": {
-
-                "rice": joblib.load(
-                    os.path.join(MODEL_DIR, "rf_rice.pkl")
-                ),
-
-                "wheat": joblib.load(
-                    os.path.join(MODEL_DIR, "rf_wheat.pkl")
-                ),
-
-                "maize": joblib.load(
-                    os.path.join(MODEL_DIR, "rf_maize.pkl")
-                )
             }
+
+            # "rf": {
+
+            #     "rice": joblib.load(
+            #         os.path.join(MODEL_DIR, "rf_rice.pkl")
+            #     ),
+
+            #     "wheat": joblib.load(
+            #         os.path.join(MODEL_DIR, "rf_wheat.pkl")
+            #     ),
+
+            #     "maize": joblib.load(
+            #         os.path.join(MODEL_DIR, "rf_maize.pkl")
+            #     )
+            # }
         }
 
    
@@ -197,22 +197,22 @@ def get_xgb_model(recommended):
     return models["xgb"][recommended]
 
 
-def get_rf_model(recommended):
+# def get_rf_model(recommended):
 
-    models = load_models()
+#     models = load_models()
 
-    return models["rf"][recommended]
+#     return models["rf"][recommended]
 
 
-def ensemble_predict(candidate, recommended):
+# def ensemble_predict(candidate, recommended):
 
-    xgb_model = get_xgb_model(recommended)
-    rf_model = get_rf_model(recommended)
+#     xgb_model = get_xgb_model(recommended)
+#     rf_model = get_rf_model(recommended)
 
-    xgb_pred = float(xgb_model.predict(candidate)[0])
-    rf_pred = float(rf_model.predict(candidate)[0])
+#     xgb_pred = float(xgb_model.predict(candidate)[0])
+#     rf_pred = float(rf_model.predict(candidate)[0])
 
-    return (xgb_pred + rf_pred) / 2
+#     return (xgb_pred + rf_pred) / 2
 def get_explainer(recommended):
 
     global EXPLAINERS
