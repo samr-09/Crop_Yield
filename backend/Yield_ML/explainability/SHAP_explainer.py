@@ -16,7 +16,7 @@ import pandas as pd
 import base64
 from io import BytesIO
 import os
-import dice_ml
+
 
 
 from prediction.preprocess import create_input
@@ -105,92 +105,8 @@ def get_dataset():
         )
 
     return DF
-# ===============================
-# DiCE DATASET
-# ===============================
 
-def get_dice_dataset():
 
-    df = get_dataset().copy()
-
-    # Encode season
-    if df["season"].dtype == object:
-
-        from prediction.preprocess import season_encoder
-
-        df["season"] = season_encoder.transform(
-            df["season"].str.strip().str.lower().str.replace(" ", "_")
-        )
-
-    # Encode soil type
-    if df["soil_type"].dtype == object:
-
-        from prediction.preprocess import soil_encoder
-
-        df["soil_type"] = soil_encoder.transform(
-            df["soil_type"].str.strip().str.lower().str.replace(" ", "_")
-        )
-
-    if "pH" in df.columns:
-
-        df.rename(
-            columns={"pH": "ph"},
-            inplace=True
-        )
-
-    df = df[
-        [
-            "latitude",
-            "longitude",
-            "season",
-            "temperature",
-            "soil_type",
-            "ph",
-            "seasonal_rainfall"
-        ]
-    ].copy()
-
-    # Dummy outcome
-    df["yield"] = 0.0
-
-    return df
-# ===============================
-# DiCE EXPLAINER
-# ===============================
-
-DICE = {}
-
-def get_dice_explainer(model_name):
-
-    global DICE
-
-    if model_name not in DICE:
-
-        dice_data = dice_ml.Data(
-            dataframe=get_dice_dataset(),
-            continuous_features=[
-                "latitude",
-                "longitude",
-                "temperature",
-                "ph",
-                "seasonal_rainfall"
-            ],
-            outcome_name="yield"
-        )
-
-        dice_model = dice_ml.Model(
-            model=get_model(model_name),
-            backend="sklearn",
-            model_type="regressor"
-        )
-
-        DICE[model_name] = dice_ml.Dice(
-            dice_data,
-            dice_model,
-            method="genetic"
-        )
-
-    return DICE[model_name]
 # ===============================
 # CONVERT PLOT TO BASE64
 # ===============================
@@ -540,46 +456,97 @@ def generate_final_recommendation(
         )
 
     return text
-# ===============================
-# COUNTERFACTUAL GENERATION
-# ===============================
-
 def generate_counterfactual(inp, recommended):
 
-    try:
+    model = get_model(recommended)
 
-        dice = get_dice_explainer(recommended)
+    current = inp.copy()
 
-        current_prediction = float(
-            get_model(recommended).predict(inp)[0]
-        )
+    current_prediction = float(model.predict(current)[0])
 
-        cf = dice.generate_counterfactuals(
-            inp,
-            total_CFs=1,
-            desired_range=[
-                current_prediction * 1.05,
-                current_prediction * 1.50
-            ],
-            features_to_vary=[
-                "temperature",
-                "ph",
-                "seasonal_rainfall"
-            ]
-        )
+    best_prediction = current_prediction
+    best_input = current.copy()
 
-        cf_df = cf.cf_examples_list[0].final_cfs_df
+    temp0 = float(current.iloc[0]["temperature"])
+    rain0 = float(current.iloc[0]["seasonal_rainfall"])
+    ph0 = float(current.iloc[0]["ph"])
 
-        if cf_df.empty:
-            return None
+    temperatures = np.arange(temp0 - 2, temp0 + 2.1, 0.5)
+    rainfalls = np.arange(max(0, rain0 - 50), rain0 + 51, 10)
+    ph_values = np.arange(
+        max(4.5, ph0 - 0.5),
+        min(8.5, ph0 + 0.51),
+        0.1
+    )
 
-        return cf_df.iloc[0]
+    for t in temperatures:
 
-    except Exception as e:
+        for r in rainfalls:
 
-        print("Counterfactual Error:", e)
+            for p in ph_values:
 
-        return None
+                candidate = current.copy()
+
+                candidate.loc[:, "temperature"] = t
+                candidate.loc[:, "seasonal_rainfall"] = r
+                candidate.loc[:, "ph"] = p
+
+                pred = float(model.predict(candidate)[0])
+
+                if pred > best_prediction:
+
+                    best_prediction = pred
+                    best_input = candidate.copy()
+
+    plt.figure(figsize=(6,4))
+
+    labels = ["Temperature", "Soil pH", "Rainfall"]
+
+    before = [
+        temp0,
+        ph0,
+        rain0
+    ]
+
+    after = [
+        float(best_input.iloc[0]["temperature"]),
+        float(best_input.iloc[0]["ph"]),
+        float(best_input.iloc[0]["seasonal_rainfall"])
+    ]
+
+    x = np.arange(len(labels))
+    width = 0.35
+
+    plt.bar(x - width/2, before, width, label="Current")
+    plt.bar(x + width/2, after, width, label="Suggested")
+
+    plt.xticks(x, labels)
+    plt.ylabel("Value")
+    plt.title("Counterfactual Feature Comparison")
+    plt.legend()
+
+    plot = plot_to_base64()
+
+    interpretation = f"""
+Counterfactual analysis indicates that the predicted yield could be improved by adjusting a few controllable environmental factors.
+
+Temperature:
+{temp0:.2f} °C → {after[0]:.2f} °C
+
+Soil pH:
+{ph0:.2f} → {after[1]:.2f}
+
+Seasonal Rainfall:
+{rain0:.2f} mm → {after[2]:.2f} mm
+
+Predicted Yield:
+{current_prediction:.4f} → {best_prediction:.4f} ton/hectare
+"""
+
+    return {
+        "plot": plot,
+        "interpretation": interpretation
+    }
 # ===============================
 # EXPLAIN PREDICTION
 # ===============================
@@ -690,25 +657,10 @@ def explain_prediction(data, recommended, prediction):
         # ===============================
 
         counterfactual = generate_counterfactual(
-            inp,
+            inp.copy(),
             recommended
         )
-        counterfactual_summary = None
-
-        if counterfactual is not None:
-
-            counterfactual_summary = {
-
-        "temperature_before": float(inp.iloc[0]["temperature"]),
-        "temperature_after": float(counterfactual["temperature"]),
-
-        "ph_before": float(inp.iloc[0]["ph"]),
-        "ph_after": float(counterfactual["ph"]),
-
-        "rainfall_before": float(inp.iloc[0]["seasonal_rainfall"]),
-        "rainfall_after": float(counterfactual["seasonal_rainfall"])
-
-    }
+        
         # ===============================
         # FORCE PLOT
         # ===============================
@@ -860,67 +812,7 @@ def explain_prediction(data, recommended, prediction):
 
         heatmap_plot = plot_to_base64()
         print("HEATMAP DONE", flush=True)
-        # ===============================
-# COUNTERFACTUAL PLOT
-# ===============================
 
-        counterfactual_plot = None
-
-        if counterfactual_summary is not None:
-
-            plt.figure(figsize=(6,4))
-
-            features = ["Temperature", "Soil pH", "Rainfall"]
-
-            before = [
-                counterfactual_summary["temperature_before"],
-                counterfactual_summary["ph_before"],
-                counterfactual_summary["rainfall_before"]
-    ]
-
-            after = [
-                counterfactual_summary["temperature_after"],
-                counterfactual_summary["ph_after"],
-                counterfactual_summary["rainfall_after"]
-    ]
-
-        x = np.arange(len(features))
-        width = 0.35
-
-        plt.bar(x - width/2, before, width, label="Current")
-        plt.bar(x + width/2, after, width, label="Counterfactual")
-
-        plt.xticks(x, features)
-        plt.ylabel("Value")
-        plt.title("Counterfactual Feature Comparison")
-        plt.legend()
-
-        counterfactual_plot = plot_to_base64()
-        # ===============================
-# COUNTERFACTUAL INTERPRETATION
-# ===============================
-
-        counterfactual_interpretation = None
-
-        if counterfactual_summary is not None:
-
-                    counterfactual_interpretation = f"""
-        The counterfactual analysis suggests that the predicted crop yield
-        could potentially be improved under slightly different agronomic
-        conditions.
-
-        Temperature:
-        {counterfactual_summary['temperature_before']:.2f} °C → {counterfactual_summary['temperature_after']:.2f} °C
-
-        Soil pH:
-        {counterfactual_summary['ph_before']:.2f} → {counterfactual_summary['ph_after']:.2f}
-
-        Seasonal Rainfall:
-        {counterfactual_summary['rainfall_before']:.2f} mm → {counterfactual_summary['rainfall_after']:.2f} mm
-
-        These modifications represent a hypothetical scenario generated by
-        the counterfactual explanation model.
-        """
         # ===============================
         # AI EXPLANATION TEXT
         # ===============================
@@ -976,8 +868,8 @@ Soil pH: {soil_ph}
 
     "heatmap_plot": heatmap_plot,
     "heatmap_interpretation": heatmap_interpretation,
-    "counterfactual_plot": counterfactual_plot,
-    "counterfactual_interpretation": counterfactual_interpretation,
+    "counterfactual_plot": counterfactual["plot"],
+    "counterfactual_interpretation": counterfactual["interpretation"],
 
     "final_recommendation": final_recommendation,
 
