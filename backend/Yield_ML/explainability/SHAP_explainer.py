@@ -665,161 +665,161 @@ def explain_prediction(data, recommended, prediction):
         # ===============================
         # FORCE PLOT
         # ===============================
-        start = time.time()
-        shap.force_plot(
-            base_value,
-            sample_shap,
-            X[0],
-            feature_names=inp.columns,
-            matplotlib=True,
-            show=False
-        )
+        # start = time.time()
+        # shap.force_plot(
+        #     base_value,
+        #     sample_shap,
+        #     X[0],
+        #     feature_names=inp.columns,
+        #     matplotlib=True,
+        #     show=False
+        # )
 
-        force_plot = plot_to_base64()
-        print(f"Force: {time.time()-start:.2f} sec")
-        print("FORCE DONE", flush=True)
+        # force_plot = plot_to_base64()
+        # print(f"Force: {time.time()-start:.2f} sec")
+        # print("FORCE DONE", flush=True)
 
         # ===============================
         # WATERFALL PLOT
         # ===============================
-        start = time.time()
-        shap.plots.waterfall(
-            shap.Explanation(
-                values=sample_shap,
-                base_values=base_value,
-                data=inp.iloc[0],
-                feature_names=inp.columns
-            ),
-            show=False
-        )
+        # start = time.time()
+        # shap.plots.waterfall(
+        #     shap.Explanation(
+        #         values=sample_shap,
+        #         base_values=base_value,
+        #         data=inp.iloc[0],
+        #         feature_names=inp.columns
+        #     ),
+        #     show=False
+        # )
 
-        waterfall_plot = plot_to_base64()
-        print(f"Waterfall: {time.time()-start:.2f} sec")
-        print("WATERFALL DONE", flush=True)
+        # waterfall_plot = plot_to_base64()
+        # print(f"Waterfall: {time.time()-start:.2f} sec")
+        # print("WATERFALL DONE", flush=True)
 
         # ===============================
         # FEATURE IMPORTANCE
         # ===============================
-        start = time.time()
-        shap.plots.bar(
-            shap.Explanation(
-                values=sample_shap,
-                feature_names=inp.columns
-            ),
-            show=False
-        )
+        # start = time.time()
+        # shap.plots.bar(
+        #     shap.Explanation(
+        #         values=sample_shap,
+        #         feature_names=inp.columns
+        #     ),
+        #     show=False
+        # )
 
-        bar_plot = plot_to_base64()
-        print(f"Bar: {time.time()-start:.2f} sec")
-        print("BAR DONE", flush=True)
+        # bar_plot = plot_to_base64()
+        # print(f"Bar: {time.time()-start:.2f} sec")
+        # print("BAR DONE", flush=True)
 
         # ===============================
         # SCATTER PLOT
         # ===============================
-        start = time.time()
-        plt.figure()
+        # start = time.time()
+        # plt.figure()
 
-        if recommended == "rice":
+        # if recommended == "rice":
 
-            y = df["rice_yield"]
+        #     y = df["rice_yield"]
 
-        elif recommended == "wheat":
+        # elif recommended == "wheat":
 
-            y = df["wheat_yield"]
+        #     y = df["wheat_yield"]
 
-        else:
+        # else:
 
-            y = df["maize_yield"]
+        #     y = df["maize_yield"]
 
-        sns.scatterplot(
-            x=df["seasonal_rainfall"],
-            y=y
-        )
+        # sns.scatterplot(
+        #     x=df["seasonal_rainfall"],
+        #     y=y
+        # )
 
-        plt.title(
-            "Rainfall vs Yield Relationship"
-        )
+        # plt.title(
+        #     "Rainfall vs Yield Relationship"
+        # )
 
-        plt.xlabel("Seasonal Rainfall")
+        # plt.xlabel("Seasonal Rainfall")
 
-        plt.ylabel("Yield")
+        # plt.ylabel("Yield")
 
-        scatter_plot = plot_to_base64()
-        print(f"Scatter: {time.time()-start:.2f} sec")
-        print("SCATTER DONE", flush=True)
+        # scatter_plot = plot_to_base64()
+        # print(f"Scatter: {time.time()-start:.2f} sec")
+        # print("SCATTER DONE", flush=True)
 
         # ===============================
         # YIELD COMPARISON
         # ===============================
         
-        rice_pred = prediction["rice"]
-        wheat_pred = prediction["wheat"]
-        maize_pred = prediction["maize"]
-        start = time.time()
-        plt.figure()
+        # rice_pred = prediction["rice"]
+        # wheat_pred = prediction["wheat"]
+        # maize_pred = prediction["maize"]
+        # start = time.time()
+        # plt.figure()
 
-        plt.bar(
-            ["Rice", "Wheat", "Maize"],
-            [rice_pred, wheat_pred, maize_pred]
-        )
+        # plt.bar(
+        #     ["Rice", "Wheat", "Maize"],
+        #     [rice_pred, wheat_pred, maize_pred]
+        # )
 
-        plt.title(
-            "Predicted Yield Comparison"
-        )
+        # plt.title(
+        #     "Predicted Yield Comparison"
+        # )
 
-        plt.ylabel("Yield")
+        # plt.ylabel("Yield")
 
-        comparison_plot = plot_to_base64()
-        print(f"Comparison: {time.time()-start:.2f} sec")
-        print("COMPARISON DONE", flush=True)
+        # comparison_plot = plot_to_base64()
+        # print(f"Comparison: {time.time()-start:.2f} sec")
+        # print("COMPARISON DONE", flush=True)
 
         # ===============================
         # CORRELATION HEATMAP
         # ===============================
-        start = time.time()
-        plt.figure(figsize=(6, 4))
+        # start = time.time()
+        # plt.figure(figsize=(6, 4))
 
-        available_features = []
+        # available_features = []
 
-        possible_features = [
-            "season",
-            "temperature",
-            "soil_type",
-            "ph",
-            "pH",
-            "seasonal_rainfall"
-        ]
+        # possible_features = [
+        #     "season",
+        #     "temperature",
+        #     "soil_type",
+        #     "ph",
+        #     "pH",
+        #     "seasonal_rainfall"
+        # ]
 
-        for col in possible_features:
+        # for col in possible_features:
 
-            if col in df.columns:
+        #     if col in df.columns:
 
-                available_features.append(col)
+        #         available_features.append(col)
 
-        corr_df = df[available_features].copy()
+        # corr_df = df[available_features].copy()
 
-        # encode non numeric columns
-        for col in corr_df.columns:
+        # # encode non numeric columns
+        # for col in corr_df.columns:
 
-            if corr_df[col].dtype == "object":
+        #     if corr_df[col].dtype == "object":
 
-                corr_df[col] = pd.factorize(
-                    corr_df[col]
-                )[0]
+        #         corr_df[col] = pd.factorize(
+        #             corr_df[col]
+        #         )[0]
 
-        sns.heatmap(
-            corr_df.corr(),
-            annot=False,
-            cmap="coolwarm"
-        )
+        # sns.heatmap(
+        #     corr_df.corr(),
+        #     annot=False,
+        #     cmap="coolwarm"
+        # )
 
-        plt.title(
-            "Agronomic Feature Correlation"
-        )
+        # plt.title(
+        #     "Agronomic Feature Correlation"
+        # )
 
-        heatmap_plot = plot_to_base64()
-        print(f"Heatmap: {time.time()-start:.2f} sec")
-        print("HEATMAP DONE", flush=True)
+        # heatmap_plot = plot_to_base64()
+        # print(f"Heatmap: {time.time()-start:.2f} sec")
+        # print("HEATMAP DONE", flush=True)
 
         # ===============================
         # AI EXPLANATION TEXT
@@ -859,23 +859,40 @@ Soil pH: {soil_ph}
     "input_summary": input_summary,
     "prediction_summary": prediction_summary,
 
-    "force_plot": force_plot,
-    "force_interpretation": force_interpretation,
+    # "force_plot": force_plot,
+    # "force_interpretation": force_interpretation,
 
-    "waterfall_plot": waterfall_plot,
-    "waterfall_interpretation": waterfall_interpretation,
+    # "waterfall_plot": waterfall_plot,
+    # "waterfall_interpretation": waterfall_interpretation,
 
-    "bar_plot": bar_plot,
-    "bar_interpretation": bar_interpretation,
+    # "bar_plot": bar_plot,
+    # "bar_interpretation": bar_interpretation,
 
-    "scatter_plot": scatter_plot,
-    "scatter_interpretation": scatter_interpretation,
+    # "scatter_plot": scatter_plot,
+    # "scatter_interpretation": scatter_interpretation,
 
-    "comparison_plot": comparison_plot,
-    "comparison_interpretation": comparison_interpretation,
+    # "comparison_plot": comparison_plot,
+    # "comparison_interpretation": comparison_interpretation,
 
-    "heatmap_plot": heatmap_plot,
-    "heatmap_interpretation": heatmap_interpretation,
+    # "heatmap_plot": heatmap_plot,
+    # "heatmap_interpretation": heatmap_interpretation,
+    "force_plot": None,
+"force_interpretation": None,
+
+"waterfall_plot": None,
+"waterfall_interpretation": None,
+
+"bar_plot": None,
+"bar_interpretation": None,
+
+"scatter_plot": None,
+"scatter_interpretation": None,
+
+"comparison_plot": None,
+"comparison_interpretation": None,
+
+"heatmap_plot": None,
+"heatmap_interpretation": None,
     "counterfactual_plot": counterfactual["plot"],
     "counterfactual_interpretation": counterfactual["interpretation"],
 
