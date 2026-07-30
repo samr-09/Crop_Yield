@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
-
+import time
 import numpy as np
 import joblib
 import gc
@@ -327,6 +327,7 @@ def generate_prediction_summary(prediction, recommended):
             )
         )
     }
+
 def generate_force_interpretation(
     positive_features,
     negative_features,
@@ -552,6 +553,7 @@ Predicted Yield:
 def explain_prediction(data, recommended, prediction):
 
     try:
+        overall = time.time()
 
         # ===============================
         # CREATE INPUT
@@ -653,17 +655,17 @@ def explain_prediction(data, recommended, prediction):
         # ===============================
         # COUNTERFACTUAL
         # ===============================
-
+        start = time.time()
         counterfactual = generate_counterfactual(
             inp.copy(),
             recommended
         )
-        print(counterfactual)
+        print(f"Counterfactual: {time.time()-start:.2f} sec")
         
         # ===============================
         # FORCE PLOT
         # ===============================
-
+        start = time.time()
         shap.force_plot(
             base_value,
             sample_shap,
@@ -674,11 +676,13 @@ def explain_prediction(data, recommended, prediction):
         )
 
         force_plot = plot_to_base64()
+        print(f"Force: {time.time()-start:.2f} sec")
         print("FORCE DONE", flush=True)
 
         # ===============================
         # WATERFALL PLOT
         # ===============================
+        start = time.time()
         shap.plots.waterfall(
             shap.Explanation(
                 values=sample_shap,
@@ -690,12 +694,13 @@ def explain_prediction(data, recommended, prediction):
         )
 
         waterfall_plot = plot_to_base64()
+        print(f"Waterfall: {time.time()-start:.2f} sec")
         print("WATERFALL DONE", flush=True)
 
         # ===============================
         # FEATURE IMPORTANCE
         # ===============================
-
+        start = time.time()
         shap.plots.bar(
             shap.Explanation(
                 values=sample_shap,
@@ -705,12 +710,13 @@ def explain_prediction(data, recommended, prediction):
         )
 
         bar_plot = plot_to_base64()
+        print(f"Bar: {time.time()-start:.2f} sec")
         print("BAR DONE", flush=True)
 
         # ===============================
         # SCATTER PLOT
         # ===============================
-
+        start = time.time()
         plt.figure()
 
         if recommended == "rice":
@@ -739,16 +745,17 @@ def explain_prediction(data, recommended, prediction):
         plt.ylabel("Yield")
 
         scatter_plot = plot_to_base64()
+        print(f"Scatter: {time.time()-start:.2f} sec")
         print("SCATTER DONE", flush=True)
 
         # ===============================
         # YIELD COMPARISON
         # ===============================
-
+        
         rice_pred = prediction["rice"]
         wheat_pred = prediction["wheat"]
         maize_pred = prediction["maize"]
-
+        start = time.time()
         plt.figure()
 
         plt.bar(
@@ -763,12 +770,13 @@ def explain_prediction(data, recommended, prediction):
         plt.ylabel("Yield")
 
         comparison_plot = plot_to_base64()
+        print(f"Comparison: {time.time()-start:.2f} sec")
         print("COMPARISON DONE", flush=True)
 
         # ===============================
         # CORRELATION HEATMAP
         # ===============================
-
+        start = time.time()
         plt.figure(figsize=(6, 4))
 
         available_features = []
@@ -810,6 +818,7 @@ def explain_prediction(data, recommended, prediction):
         )
 
         heatmap_plot = plot_to_base64()
+        print(f"Heatmap: {time.time()-start:.2f} sec")
         print("HEATMAP DONE", flush=True)
 
         # ===============================
