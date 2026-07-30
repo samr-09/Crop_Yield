@@ -824,38 +824,41 @@ def explain_prediction(data, recommended, prediction):
         # SCATTER PLOT
         # ===============================
         print("START SCATTER", flush=True)
-        start = time.time()
-        plt.figure()
+        # # start = time.time()
+        # # plt.figure()
 
-        if recommended == "rice":
+        # # if recommended == "rice":
 
-            y = df["rice_yield"]
+        # #     y = df["rice_yield"]
 
-        elif recommended == "wheat":
+        # # elif recommended == "wheat":
 
-            y = df["wheat_yield"]
+        # #     y = df["wheat_yield"]
 
-        else:
+        # # else:
 
-            y = df["maize_yield"]
+        # #     y = df["maize_yield"]
 
-        sns.scatterplot(
-            x=df["seasonal_rainfall"],
-            y=y
-        )
+        # # sns.scatterplot(
+        # #     x=df["seasonal_rainfall"],
+        # #     y=y
+        # # )
 
-        plt.title(
-            "Rainfall vs Yield Relationship"
-        )
+        # # plt.title(
+        # #     "Rainfall vs Yield Relationship"
+        # # )
 
-        plt.xlabel("Seasonal Rainfall")
+        # # plt.xlabel("Seasonal Rainfall")
 
-        plt.ylabel("Yield")
+        # # plt.ylabel("Yield")
 
-        scatter_plot = plot_to_base64()
-        print(f"Scatter: {time.time()-start:.2f} sec")
-        print("SCATTER DONE", flush=True)
-
+        # # scatter_plot = plot_to_base64()
+        # # print(f"Scatter: {time.time()-start:.2f} sec")
+        # print("SCATTER DONE", flush=True)
+    
+        
+        # scatter_plot = None 
+        print("SCATTER SKIPPED", flush=True)
         # ===============================
         # YIELD COMPARISON
         # ===============================
