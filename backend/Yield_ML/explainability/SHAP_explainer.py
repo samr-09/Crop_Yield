@@ -1,9 +1,6 @@
 print("########################")
 print("NEW SHAP VERSION RUNNING")
 print("########################")
-from turtle import distance
-
-from turtle import distance
 
 import matplotlib
 
