@@ -840,9 +840,14 @@ def explain_prediction(data, recommended, prediction):
 
             y = df["maize_yield"]
         print("Y SELECTED", flush=True)
-        sns.scatterplot(
-            x=df["seasonal_rainfall"],
-            y=y
+        # sns.scatterplot(
+        #     x=df["seasonal_rainfall"],
+        #     y=y
+        # )
+        plt.scatter(
+        df["seasonal_rainfall"],
+        y,
+        s=5
         )
         print("SCATTER PLOTTED", flush=True)
         plt.title(
@@ -859,8 +864,7 @@ def explain_prediction(data, recommended, prediction):
         print("SCATTER DONE", flush=True)
     
         
-        scatter_plot = None 
-        print("SCATTER SKIPPED", flush=True)
+        
         # ===============================
         # YIELD COMPARISON
         # ===============================
