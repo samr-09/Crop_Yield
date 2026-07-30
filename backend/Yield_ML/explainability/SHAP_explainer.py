@@ -51,18 +51,38 @@ def load_models():
 
         MODELS = {
 
-            "rice": joblib.load(
-                os.path.join(MODEL_DIR, "xgb_rice.pkl")
-            ),
+            "xgb": {
 
-            "wheat": joblib.load(
-                os.path.join(MODEL_DIR, "xgb_wheat.pkl")
-            ),
+                "rice": joblib.load(
+                    os.path.join(MODEL_DIR, "xgb_rice.pkl")
+                ),
 
-            "maize": joblib.load(
-                os.path.join(MODEL_DIR, "xgb_maize.pkl")
-            )
+                "wheat": joblib.load(
+                    os.path.join(MODEL_DIR, "xgb_wheat.pkl")
+                ),
+
+                "maize": joblib.load(
+                    os.path.join(MODEL_DIR, "xgb_maize.pkl")
+                )
+            },
+
+            "rf": {
+
+                "rice": joblib.load(
+                    os.path.join(MODEL_DIR, "rf_rice.pkl")
+                ),
+
+                "wheat": joblib.load(
+                    os.path.join(MODEL_DIR, "rf_wheat.pkl")
+                ),
+
+                "maize": joblib.load(
+                    os.path.join(MODEL_DIR, "rf_maize.pkl")
+                )
+            }
         }
+
+   
 
     return MODELS
 
@@ -170,18 +190,36 @@ def clean_input(inp):
 # SELECT MODEL
 # ===============================
 
-def get_model(recommended):
+def get_xgb_model(recommended):
 
     models = load_models()
 
-    return models[recommended]
+    return models["xgb"][recommended]
+
+
+def get_rf_model(recommended):
+
+    models = load_models()
+
+    return models["rf"][recommended]
+
+
+def ensemble_predict(candidate, recommended):
+
+    xgb_model = get_xgb_model(recommended)
+    rf_model = get_rf_model(recommended)
+
+    xgb_pred = float(xgb_model.predict(candidate)[0])
+    rf_pred = float(rf_model.predict(candidate)[0])
+
+    return (xgb_pred + rf_pred) / 2
 def get_explainer(recommended):
 
     global EXPLAINERS
 
     if recommended not in EXPLAINERS:
 
-        booster = get_model(recommended).get_booster()
+        booster = get_xgb_model(recommended).get_booster()
 
         import shap
         EXPLAINERS[recommended] = shap.TreeExplainer(booster)
@@ -460,11 +498,12 @@ def generate_final_recommendation(
     return text
 def generate_counterfactual(inp, recommended):
 
-    model = get_model(recommended)
-
     current = inp.copy()
 
-    current_prediction = float(model.predict(current)[0])
+    current_prediction = ensemble_predict(
+        current,
+        recommended
+    )
 
     best_prediction = current_prediction
     best_input = current.copy()
@@ -490,7 +529,7 @@ def generate_counterfactual(inp, recommended):
                 candidate.loc[:, "seasonal_rainfall"] = r
                 candidate.loc[:, "ph"] = p
 
-                pred = float(model.predict(candidate)[0])
+                pred = ensemble_predict(candidate, recommended)
 
                 temp_change = abs(t - temp0)
                 rain_change = abs(r - rain0)
@@ -510,7 +549,7 @@ def generate_counterfactual(inp, recommended):
                     best_prediction = pred
                     best_input = candidate
 
-                    print("="*50)
+                print("="*50)
     print("Current")
 
     print(temp0, rain0, ph0)
